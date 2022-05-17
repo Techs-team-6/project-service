@@ -4,6 +4,8 @@
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <WarningLevel>4</WarningLevel>
     </PropertyGroup>
 
     <ItemGroup>
@@ -11,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+      <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
