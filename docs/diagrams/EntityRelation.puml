@@ -1,0 +1,17 @@
+@startuml
+entity Project {
+  * Id GUID
+  --
+  * GithubToken string
+  * RepositoryName string
+}
+
+entity ProjectVersion {
+  * Id GUID
+  --
+  * ProjectId Guid
+  * StorageId Guid
+}
+
+Project}|--ProjectVersion
+@enduml

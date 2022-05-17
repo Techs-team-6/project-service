@@ -1,0 +1,36 @@
+@startuml
+
+package "WebApi" {
+  [ProjectController]
+  [GithubController]
+}
+
+package "Core" {
+  [ProjectService]
+  [GithubService]
+  [Repository]
+}
+
+package "HttpClient" {
+  [CentralServerHttpClient]
+}
+
+
+database "Sql" {
+    [ProjectServieContext]
+    [StorageContxt]
+}
+
+[ProjectController] -d- [ProjectService]
+[ProjectController] -d- [GithubService]
+[ProjectService] -d- [ProjectServieContext]
+[ProjectService] - [GithubService]
+[ProjectService] -d- [Repository]
+[Repository] - [StorageContxt]
+[ProjectServieContext] -[hidden]- [StorageContxt]
+[CentralServerHttpClient] -l- [ProjectService]
+[CentralServerHttpClient] -l- [GithubService]
+[GithubController] -d- [GithubService]
+
+
+@enduml
