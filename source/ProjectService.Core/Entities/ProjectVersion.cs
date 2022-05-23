@@ -11,7 +11,7 @@ public class ProjectVersion
     }
 
 #pragma warning disable CS8618
-    public ProjectVersion() { }
+    protected ProjectVersion() { }
 #pragma warning restore CS8618
 
     public Guid Id { get; private init; }
