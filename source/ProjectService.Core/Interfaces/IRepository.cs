@@ -1,7 +1,7 @@
 ﻿namespace ProjectService.Core.Interfaces;
 
-public interface IRepository
+public interface IRepository<T>
 {
-    Guid Save(object entity);
-    object Get(Guid id);
+    Guid SaveFile(T entity);
+    T GetFile(Guid id);
 }
