@@ -1,20 +1,20 @@
-﻿namespace ProjectService.Core.Entities;
+﻿namespace ProjectService.WebApi.Entities;
 
-public class ProjectVersion
+public class ProjectBuild
 {
-    public ProjectVersion(Guid storageId, Guid projectId, string commitId)
+    public ProjectBuild(int id, Guid storageId, Guid projectId, string commitId)
     {
         StorageId = storageId;
         ProjectId = projectId;
         CommitId = commitId;
-        Id = Guid.Empty;
+        Id = id;
     }
 
 #pragma warning disable CS8618
-    protected ProjectVersion() { }
+    protected ProjectBuild() { }
 #pragma warning restore CS8618
 
-    public Guid Id { get; private init; }
+    public int Id { get; private init; }
     public Guid ProjectId { get; private init; }
     public string CommitId { get; private init; }
     public Guid StorageId { get; private init;  }

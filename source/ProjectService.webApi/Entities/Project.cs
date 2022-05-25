@@ -1,4 +1,4 @@
-﻿namespace ProjectService.Core.Entities;
+﻿namespace ProjectService.WebApi.Entities;
 
 public class Project
 {
