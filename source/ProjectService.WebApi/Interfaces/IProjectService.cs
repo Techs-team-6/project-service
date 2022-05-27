@@ -5,7 +5,7 @@ namespace ProjectService.WebApi.Interfaces;
 
 public interface IProjectService
 {
-    public string AddProject(Project project);
-    public Guid CreateVersion(Guid projectId);
-    public MemoryStream GetProjectVersionArchive(Guid projectId, int versionId);
+    public Uri AddProject(Project project);
+    public ProjectBuild CreateVersion(Guid projectId);
+    public MemoryStream GetProjectVersionArchive(Guid projectId, int buildId);
 }

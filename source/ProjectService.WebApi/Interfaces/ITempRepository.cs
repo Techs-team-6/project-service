@@ -6,4 +6,5 @@ public interface ITempRepository
 {
     string GetTempFolder(Project project);
     string DeleteFolder(Project project);
+    void Clean();
 }
