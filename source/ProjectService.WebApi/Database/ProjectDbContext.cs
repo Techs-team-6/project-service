@@ -8,15 +8,10 @@ public sealed class ProjectDbContext : DbContext
     public DbSet<Project> Projects { get; set; } = null!;
     public DbSet<ProjectBuild> Builds { get; set; } = null!;
 
-    public ProjectDbContext()
+    public ProjectDbContext(DbContextOptions<ProjectDbContext> options)
+    : base(options)
     {
         Database.EnsureCreated();
-    }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseSqlServer(
-            @"Server=(localdb)\mssqllocaldb;Database=projectsdb;Trusted_Connection=True;");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
