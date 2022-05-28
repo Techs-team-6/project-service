@@ -1,4 +1,7 @@
-﻿namespace ProjectService.WebApi.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ProjectService.WebApi.Entities;
 
 public class ProjectBuild
 {
@@ -14,6 +17,8 @@ public class ProjectBuild
     protected ProjectBuild() { }
 #pragma warning restore CS8618
 
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; private init; }
     public Guid ProjectId { get; private init; }
     public string CommitId { get; private init; }
