@@ -13,6 +13,7 @@ public class Project
         GithubToken = githubToken;
     }
 
+    [Key]
     public Guid Id { get; private set; }
     public Uri Uri { get; private set; }
     public string Name { get; private set; }
