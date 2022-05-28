@@ -17,7 +17,7 @@ public class ProjectBuild
     protected ProjectBuild() { }
 #pragma warning restore CS8618
 
-    [Column(Order = 0), Key, ForeignKey("BuildId")]
+    [Column(Order = 0), Key]
     public int Id { get; private init; }
     [Column(Order = 1), Key, ForeignKey("ProjectId")]
     public Guid ProjectId { get; private init; }
