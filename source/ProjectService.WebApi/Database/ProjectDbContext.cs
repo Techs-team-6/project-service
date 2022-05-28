@@ -13,12 +13,4 @@ public sealed class ProjectDbContext : DbContext
     {
         Database.EnsureCreated();
     }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Project>()
-            .HasMany<ProjectBuild>()
-            .WithOne()
-            .HasForeignKey(b => b.ProjectId);
-    }
 }
