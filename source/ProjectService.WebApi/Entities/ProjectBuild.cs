@@ -17,9 +17,9 @@ public class ProjectBuild
     protected ProjectBuild() { }
 #pragma warning restore CS8618
 
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Column(Order = 0), Key, ForeignKey("BuildId")]
     public int Id { get; private init; }
+    [Column(Order = 1), Key, ForeignKey("ProjectId")]
     public Guid ProjectId { get; private init; }
     public string CommitId { get; private init; }
     public Guid StorageId { get; private init;  }
