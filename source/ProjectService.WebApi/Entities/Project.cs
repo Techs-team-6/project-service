@@ -14,7 +14,6 @@ public class Project
     }
 
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; private set; }
     public Uri Uri { get; private set; }
     public string Name { get; private set; }
