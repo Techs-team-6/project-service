@@ -25,12 +25,13 @@ public class ProjectService : IProjectService
 
     public Uri AddProject(ProjectCreateDto project)
     {
-        Project createdProject = _githubService.CreateProject(project);
-        if (_context.Projects.Find(createdProject.Id) != null)
-        {
+        if (_context.Projects.Find(project.Id) != null)
+        { 
             throw new EntityAlreadyExistsException<Project>(project.Id);
         }
         
+        Project createdProject = _githubService.CreateProject(project);
+
         EntityEntry<Project> entry = _context.Projects.Add(createdProject);
         _context.SaveChanges();
         
