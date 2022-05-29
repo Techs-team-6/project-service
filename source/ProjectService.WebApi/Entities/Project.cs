@@ -1,4 +1,7 @@
-﻿namespace ProjectService.WebApi.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ProjectService.WebApi.Entities;
 
 public class Project
 {
@@ -10,6 +13,7 @@ public class Project
         GithubToken = githubToken;
     }
 
+    [Key]
     public Guid Id { get; private set; }
     public Uri Uri { get; private set; }
     public string Name { get; private set; }
