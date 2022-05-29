@@ -3,30 +3,35 @@ using ProjectService.WebApi.Database;
 using ProjectService.WebApi.Entities;
 using ProjectService.WebApi.Exceptions;
 using ProjectService.WebApi.Interfaces;
+using ProjectService.WebApi.Models;
 
 namespace ProjectService.WebApi.Services;
 
 public class ProjectService : IProjectService
 {
     private readonly ProjectDbContext _context;
+    private readonly IGithubService _githubService;
     private readonly IProjectBuildService _buildService;
 
     public ProjectService(
         ProjectDbContext context,
+        IGithubService githubService,
         IProjectBuildService buildService)
     {
         _context = context;
+        _githubService = githubService;
         _buildService = buildService;
     }
 
-    public Uri AddProject(Project project)
+    public Uri AddProject(ProjectCreateDto project)
     {
-        if (_context.Projects.Find(project.Id) != null)
+        Project createdProject = _githubService.CreateProject(project);
+        if (_context.Projects.Find(createdProject.Id) != null)
         {
             throw new EntityAlreadyExistsException<Project>(project.Id);
         }
         
-        EntityEntry<Project> entry = _context.Projects.Add(project);
+        EntityEntry<Project> entry = _context.Projects.Add(createdProject);
         _context.SaveChanges();
         
         return entry.Entity.Uri;
