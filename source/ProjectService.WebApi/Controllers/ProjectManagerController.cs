@@ -38,18 +38,17 @@ public class ProjectManagerController : ControllerBase
     [HttpGet("Get/{repositoryId:guid}/{id:int}")]
     public ActionResult<byte[]> GetBuild([FromRoute] Guid repositoryId, [FromRoute] int id)
     {
-        Stream buildStream;
+
+        Span<byte> bytes = default;
         try
         {
-            buildStream = _projectService.GetProjectVersionArchive(repositoryId, GetHashCode());
+            using Stream buildStream = _projectService.GetProjectVersionArchive(repositoryId, GetHashCode());
+            buildStream.Read(bytes);
         }
         catch (EntityNotFoundException<ProjectBuild>)
         {
             return NotFound();
         }
-        
-        Span<byte> bytes = default;
-        buildStream.Read(bytes);
         
         return bytes.ToArray();
     }
