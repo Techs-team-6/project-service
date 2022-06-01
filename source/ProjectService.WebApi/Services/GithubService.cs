@@ -8,10 +8,12 @@ namespace ProjectService.WebApi.Services;
 public class GithubService : IGithubService
 {
     private ITempRepository _tempRepository;
+    private IProjectCreator _creator;
 
-    public GithubService(ITempRepository tempRepository)
+    public GithubService(ITempRepository tempRepository, IProjectCreator creator)
     {
         _tempRepository = tempRepository;
+        _creator = creator;
     }
 
     public async Task<Entities.Project> CreateProject(ProjectCreateDto dto)
@@ -21,9 +23,28 @@ public class GithubService : IGithubService
             throw new AggregateException("Repository can not be created fore some magic reason");
 
         var project = new Entities.Project(dto.Id, new Uri(repository.Url), dto.RepositoryName, dto.GithubToken);
-        _tempRepository.GetTempFolder(project);
+        string folder = _tempRepository.GetTempFolder(project);
+        CloneRepository(folder, project);
+        _creator.Create(folder, dto.Language, dto.Template);
+        return project;
+    }
 
-        throw new NotImplementedException();
+    private async Task<Octokit.Repository?> GenerateEmptyRepository(ProjectCreateDto dto)
+    {
+        var basicAuth = new Octokit.Credentials(dto.GithubToken);
+        var client = new GitHubClient(new ProductHeaderValue(dto.RepositoryName))
+        {
+            Credentials = basicAuth
+        };
+        var repository = new NewRepository(dto.RepositoryName)
+        {
+            AutoInit = false,
+            Description = "",
+            LicenseTemplate = dto.License,
+            Private = dto.Private
+        };
+        Octokit.Repository? context = await client.Repository.Create(repository);
+        return context;
     }
 
     public void CloneRepository(string path, Entities.Project project)
@@ -66,24 +87,7 @@ public class GithubService : IGithubService
                 CredentialsProvider = (_url, _user, _cred) => credentials
             }
         };
+        
         LibGit2Sharp.Commands.Pull(repo, new LibGit2Sharp.Signature("ProjectService", "projectService@noreplay.com", DateTimeOffset.Now), pullOptions);
-    }
-
-    private async Task<Octokit.Repository?> GenerateEmptyRepository(ProjectCreateDto dto)
-    {
-        var basicAuth = new Octokit.Credentials(dto.GithubToken);
-        var client = new GitHubClient(new ProductHeaderValue(dto.RepositoryName))
-        {
-            Credentials = basicAuth
-        };
-        var repository = new NewRepository(dto.RepositoryName)
-        {
-            AutoInit = false,
-            Description = "",
-            LicenseTemplate = dto.License,
-            Private = dto.Private
-        };
-        Octokit.Repository? context = await client.Repository.Create(repository);
-        return context;
     }
 }
