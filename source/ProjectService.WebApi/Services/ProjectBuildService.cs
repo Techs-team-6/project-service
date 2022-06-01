@@ -38,7 +38,7 @@ public class ProjectBuildService : IProjectBuildService
         string fullBuildZipName = CreateBuildArchive(buildFolderPath, tempFolderPath, project.Name);
 
         // save compressed in repository
-        Guid storageId =  _repository.SaveStream(GetMemoryStream(fullBuildZipName));
+        Guid storageId =  _repository.SaveStream(File.OpenRead(fullBuildZipName));
         int newBuildId = GetLastBuildId(project) + 1;
         
         _tempRepository.DeleteFolder(project);
@@ -77,15 +77,6 @@ public class ProjectBuildService : IProjectBuildService
     private static string FullBuildZipName(string pathToZip, string projectName)
     {
         return Path.Combine(pathToZip, $"{projectName}.zip");
-    }
-
-    private static MemoryStream GetMemoryStream(string file)
-    {
-        var memoryStream = new MemoryStream();
-        using FileStream fileStream = File.OpenRead(file);
-        fileStream.CopyTo(memoryStream);
-
-        return memoryStream;
     }
 
     private int GetLastBuildId(Project project, int defaultValue = 0)
