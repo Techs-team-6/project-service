@@ -39,4 +39,10 @@ public class ProjectManagerController : ControllerBase
     {
         return _gitInfo;
     }
+    
+    [HttpPost("projects/{projectId}/builds/create")]
+    public ActionResult CreateBuild(Guid projectId)
+    {
+        throw new NotImplementedException();
+    }
 }

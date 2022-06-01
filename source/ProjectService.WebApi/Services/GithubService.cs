@@ -1,4 +1,5 @@
 using System.Security.Authentication;
+using System.Text;
 using LibGit2Sharp;
 using Octokit;
 using ProjectService.WebApi.Enums;
@@ -12,12 +13,14 @@ public class GithubService : IGithubService
     private readonly ITempRepository _tempRepository;
     private readonly IProjectCreator _creator;
     private readonly GitInfo _gitInfo;
+    private readonly IConfiguration _configuration;
 
-    public GithubService(ITempRepository tempRepository, IProjectCreator creator, GitInfo gitInfo)
+    public GithubService(ITempRepository tempRepository, IProjectCreator creator, GitInfo gitInfo, IConfiguration configuration)
     {
         _tempRepository = tempRepository;
         _creator = creator;
         _gitInfo = gitInfo;
+        _configuration = configuration;
     }
 
     public async Task<Entities.Project> CreateProject(ProjectCreateDto dto)
@@ -29,7 +32,13 @@ public class GithubService : IGithubService
         var project = new Entities.Project(dto.Id, new Uri(repository.Url), dto.RepositoryName, string.Empty);
         string folder = _tempRepository.GetTempFolder(project);
         CloneRepository(folder, project);
-        project.BuildString = await _creator.Create(folder, dto.RepositoryName);
+        string csprojPath = await _creator.Create(folder, dto.RepositoryName);
+        string buildString = "dotnet build " + csprojPath;
+        project.BuildString = buildString;
+        string workflowContent = CreateWorkflow(project);
+        Directory.CreateDirectory(Path.Combine(folder, ".github"));
+        Directory.CreateDirectory(Path.Combine(folder, ".github/workflows"));
+        await File.WriteAllTextAsync(Path.Combine(folder, ".github/workflows/publish.yml"), workflowContent);
         return project;
     }
 
@@ -109,5 +118,24 @@ public class GithubService : IGithubService
         };
 
         return credentials;
+    }
+
+    private string CreateWorkflow(Entities.Project project)
+    {
+        var stringBuilder = new StringBuilder();
+        stringBuilder.AppendLine("on:");
+        stringBuilder.AppendLine(" push:");
+        stringBuilder.AppendLine("  branches:");
+        stringBuilder.AppendLine("   - master");
+        stringBuilder.AppendLine("  jobs:");
+        stringBuilder.AppendLine("   deploy:");
+        stringBuilder.AppendLine("    runs-on: ubuntu-latest");
+        stringBuilder.AppendLine("    steps:");
+        stringBuilder.AppendLine("     - name:Deploy");
+        stringBuilder.AppendLine("       uses: fjogeleit/http-request-action@v1");
+        stringBuilder.AppendLine("       with:");
+        stringBuilder.AppendLine($"       url: https://{_configuration["ProjectServiceAddress"]}/api/v1/projects/{project.Id}/builds/create");
+        stringBuilder.AppendLine("        method: POST");
+        return stringBuilder.ToString();
     }
 }
