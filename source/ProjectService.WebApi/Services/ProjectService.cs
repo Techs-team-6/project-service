@@ -57,7 +57,7 @@ public class ProjectService : IProjectService
         return entry.Entity;
     }
 
-    public MemoryStream GetProjectVersionArchive(Guid projectId, int buildId)
+    public Stream GetProjectVersionArchive(Guid projectId, int buildId)
     {
         ProjectBuild? build = _context.Builds.Find(buildId, projectId);
         if (build == null)

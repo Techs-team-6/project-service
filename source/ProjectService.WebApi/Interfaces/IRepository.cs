@@ -3,5 +3,5 @@
 public interface IRepository
 {
     Guid SaveStream(Stream entity);
-    MemoryStream GetStream(Guid id);
+    Stream GetStream(Guid id);
 }

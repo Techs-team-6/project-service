@@ -46,7 +46,7 @@ public class ProjectBuildService : IProjectBuildService
         return new ProjectBuild(newBuildId, storageId, project.Id);
     }
 
-    public MemoryStream GetBuild(ProjectBuild build)
+    public Stream GetBuild(ProjectBuild build)
     {
         return _repository.GetStream(build.StorageId);
     }
