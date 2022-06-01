@@ -5,6 +5,6 @@ namespace ProjectService.WebApi.Interfaces;
 
 public interface IGithubService
 {
-    Project CreateProject(ProjectCreateDto dto);
+    Task<Project> CreateProject(ProjectCreateDto dto);
     void CloneRepository(string path, Project project);
 }
