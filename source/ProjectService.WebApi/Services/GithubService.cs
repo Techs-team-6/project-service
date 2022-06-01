@@ -63,8 +63,10 @@ public class GithubService : IGithubService
                 CredentialsProvider = (_, _, _) => credentials
             }
         };
-        
-        LibGit2Sharp.Commands.Pull(repo, new LibGit2Sharp.Signature("ProjectService", "projectService@noreplay.com", DateTimeOffset.Now), pullOptions);
+
+        LibGit2Sharp.Commands.Pull(repo,
+            new LibGit2Sharp.Signature("ProjectService", "projectService@noreplay.com", DateTimeOffset.Now),
+            pullOptions);
     }
     
     private async Task<Octokit.Repository?> GenerateEmptyRepository(ProjectCreateDto dto)
