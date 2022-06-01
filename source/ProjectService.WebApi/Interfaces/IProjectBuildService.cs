@@ -5,5 +5,5 @@ namespace ProjectService.WebApi.Interfaces;
 public interface IProjectBuildService
 {
     ProjectBuild CreateBuild(Project project);
-    MemoryStream GetBuild(ProjectBuild build);
+    Stream GetBuild(ProjectBuild build);
 }
