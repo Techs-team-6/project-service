@@ -61,9 +61,6 @@ public class ProjectBuildService : IProjectBuildService
         string tempFolderPath,
         string projectName)
     {
-        var memoryStream = new MemoryStream();
-        var zipArchive = new ZipArchive(memoryStream);
-
         string fullBuildZipName = FullBuildZipName(tempFolderPath, projectName);
         ZipFile.CreateFromDirectory(
             buildFolderPath,
