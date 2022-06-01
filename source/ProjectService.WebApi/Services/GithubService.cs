@@ -1,6 +1,7 @@
 using System.Security.Authentication;
 using LibGit2Sharp;
 using Octokit;
+using ProjectService.WebApi.Enums;
 using ProjectService.WebApi.Interfaces;
 using ProjectService.WebApi.Models;
 
@@ -10,11 +11,13 @@ public class GithubService : IGithubService
 {
     private readonly ITempRepository _tempRepository;
     private readonly IProjectCreator _creator;
+    private readonly GitInfo _gitInfo;
 
-    public GithubService(ITempRepository tempRepository, IProjectCreator creator)
+    public GithubService(ITempRepository tempRepository, IProjectCreator creator, GitInfo gitInfo)
     {
         _tempRepository = tempRepository;
         _creator = creator;
+        _gitInfo = gitInfo;
     }
 
     public async Task<Entities.Project> CreateProject(ProjectCreateDto dto)
@@ -23,10 +26,10 @@ public class GithubService : IGithubService
         if (repository is null)
             throw new ArgumentException("Repository can not be created fore some magic reason");
 
-        var project = new Entities.Project(dto.Id, new Uri(repository.Url), dto.RepositoryName, dto.GithubToken);
+        var project = new Entities.Project(dto.Id, new Uri(repository.Url), dto.RepositoryName, string.Empty);
         string folder = _tempRepository.GetTempFolder(project);
         CloneRepository(folder, project);
-        _creator.Create(folder, dto.Language, dto.Template);
+        project.BuildString = _creator.Create(folder);
         return project;
     }
 
@@ -35,7 +38,7 @@ public class GithubService : IGithubService
         if (!Directory.Exists(path))
             throw new ArgumentException("Directory does not exists");
 
-        LibGit2Sharp.Credentials credentials = GetLibGit2SharpCredentials(project.GithubToken);
+        LibGit2Sharp.Credentials credentials = GetLibGit2SharpCredentials(_gitInfo.GithubToken);
 
         if (Directory.GetFiles(path).Length == 0)
         {
@@ -71,7 +74,7 @@ public class GithubService : IGithubService
     
     private async Task<Octokit.Repository?> GenerateEmptyRepository(ProjectCreateDto dto)
     {
-        var basicAuth = new Octokit.Credentials(dto.GithubToken);
+        var basicAuth = new Octokit.Credentials(_gitInfo.GithubToken);
         var client = new GitHubClient(new ProductHeaderValue(dto.RepositoryName))
         {
             Credentials = basicAuth
@@ -80,7 +83,6 @@ public class GithubService : IGithubService
         {
             AutoInit = false,
             Description = "",
-            LicenseTemplate = dto.License,
             Private = dto.Private
         };
         Octokit.Repository? context = await client.Repository.Create(repository);

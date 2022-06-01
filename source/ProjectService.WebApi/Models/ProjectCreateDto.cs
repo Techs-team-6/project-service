@@ -2,4 +2,4 @@
 
 namespace ProjectService.WebApi.Models;
 
-public record ProjectCreateDto(Guid Id, string GithubToken, string RepositoryName, bool Private, string License, string OwnerName, Language Language, ProjectTemplate Template);
+public record ProjectCreateDto(Guid Id, string RepositoryName, bool Private);
