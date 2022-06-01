@@ -34,23 +34,8 @@ public class GithubService : IGithubService
     {
         if (!Directory.Exists(path))
             throw new ArgumentException("Directory does not exists");
-        
-        var client = new GitHubClient(new ProductHeaderValue(project.Name))
-        {
-            Credentials = new Octokit.Credentials(project.GithubToken)
-        };
 
-        if (client is null)
-        {
-            throw new AuthenticationException("Invalid token");
-        }
-
-        LibGit2Sharp.Credentials credentials = new UsernamePasswordCredentials()
-        {
-            Username = client.Credentials.Login,
-            Password = project.GithubToken
-            
-        };
+        LibGit2Sharp.Credentials credentials = GetLibGit2SharpCredentials(project.GithubToken);
 
         if (Directory.GetFiles(path).Length == 0)
         {
@@ -98,5 +83,27 @@ public class GithubService : IGithubService
         };
         Octokit.Repository? context = await client.Repository.Create(repository);
         return context;
+    }
+
+    private LibGit2Sharp.Credentials GetLibGit2SharpCredentials(string token)
+    {
+        var client = new GitHubClient(new ProductHeaderValue(""))
+        {
+            Credentials = new Octokit.Credentials(token)
+        };
+
+        if (client is null)
+        {
+            throw new AuthenticationException("Invalid token");
+        }
+
+        LibGit2Sharp.Credentials credentials = new UsernamePasswordCredentials()
+        {
+            Username = client.Credentials.Login,
+            Password = token
+            
+        };
+
+        return credentials;
     }
 }
