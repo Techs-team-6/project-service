@@ -2,6 +2,6 @@
 
 public interface IRepository
 {
-    Guid SaveStream(MemoryStream entity);
+    Guid SaveStream(Stream entity);
     MemoryStream GetStream(Guid id);
 }
