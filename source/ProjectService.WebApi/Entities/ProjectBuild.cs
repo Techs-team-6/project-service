@@ -5,11 +5,10 @@ namespace ProjectService.WebApi.Entities;
 
 public class ProjectBuild
 {
-    public ProjectBuild(int id, Guid storageId, Guid projectId, string commitId)
+    public ProjectBuild(int id, Guid storageId, Guid projectId)
     {
         StorageId = storageId;
         ProjectId = projectId;
-        CommitId = commitId;
         Id = id;
     }
 
@@ -21,6 +20,5 @@ public class ProjectBuild
     public int Id { get; private init; }
     [Column(Order = 1), Key, ForeignKey("ProjectId")]
     public Guid ProjectId { get; private init; }
-    public string CommitId { get; private init; }
     public Guid StorageId { get; private init;  }
 }
