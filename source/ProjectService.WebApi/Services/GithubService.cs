@@ -7,8 +7,8 @@ namespace ProjectService.WebApi.Services;
 
 public class GithubService : IGithubService
 {
-    private ITempRepository _tempRepository;
-    private IProjectCreator _creator;
+    private readonly ITempRepository _tempRepository;
+    private readonly IProjectCreator _creator;
 
     public GithubService(ITempRepository tempRepository, IProjectCreator creator)
     {
@@ -20,7 +20,7 @@ public class GithubService : IGithubService
     {
         Octokit.Repository? repository = await GenerateEmptyRepository(dto);
         if (repository is null)
-            throw new AggregateException("Repository can not be created fore some magic reason");
+            throw new ArgumentException("Repository can not be created fore some magic reason");
 
         var project = new Entities.Project(dto.Id, new Uri(repository.Url), dto.RepositoryName, dto.GithubToken);
         string folder = _tempRepository.GetTempFolder(project);
@@ -63,7 +63,7 @@ public class GithubService : IGithubService
 
         if (Directory.GetFiles(path).Length == 0)
         {
-            var cloneOptions = new CloneOptions { BranchName = "master", Checkout = true, CredentialsProvider = (_url, _user, _cred) => credentials};
+            var cloneOptions = new CloneOptions { BranchName = "master", Checkout = true, CredentialsProvider = (_, _, _) => credentials};
             LibGit2Sharp.Repository.Clone(project.Uri.ToString(), path, cloneOptions);
             return;
         }
@@ -84,7 +84,7 @@ public class GithubService : IGithubService
             },
             FetchOptions = new FetchOptions()
             {
-                CredentialsProvider = (_url, _user, _cred) => credentials
+                CredentialsProvider = (_, _, _) => credentials
             }
         };
         
