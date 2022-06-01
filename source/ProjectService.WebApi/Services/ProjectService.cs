@@ -23,17 +23,17 @@ public class ProjectService : IProjectService
         _buildService = buildService;
     }
 
-    public Uri AddProject(ProjectCreateDto project)
+    public async Task<Uri> AddProject(ProjectCreateDto project)
     {
-        if (_context.Projects.Find(project.Id) != null)
+        if (await _context.Projects.FindAsync(project.Id) != null)
         { 
             throw new EntityAlreadyExistsException<Project>(project.Id);
         }
         
-        Project createdProject = _githubService.CreateProject(project);
+        Project createdProject = await _githubService.CreateProject(project);
 
-        EntityEntry<Project> entry = _context.Projects.Add(createdProject);
-        _context.SaveChanges();
+        EntityEntry<Project> entry = await _context.Projects.AddAsync(createdProject);
+        await _context.SaveChangesAsync();
         
         return entry.Entity.Uri;
     }

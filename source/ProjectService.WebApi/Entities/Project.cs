@@ -5,9 +5,9 @@ namespace ProjectService.WebApi.Entities;
 
 public class Project
 {
-    public Project(Uri uri, string name, string githubToken)
+    public Project(Guid id, Uri uri, string name, string githubToken)
     {
-        Id = Guid.Empty;
+        Id = id;
         Uri = uri;
         Name = name;
         GithubToken = githubToken;
