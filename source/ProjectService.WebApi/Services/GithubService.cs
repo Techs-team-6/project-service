@@ -1,3 +1,4 @@
+using System.Security.Authentication;
 using LibGit2Sharp;
 using Octokit;
 using ProjectService.WebApi.Interfaces;
@@ -29,41 +30,31 @@ public class GithubService : IGithubService
         return project;
     }
 
-    private async Task<Octokit.Repository?> GenerateEmptyRepository(ProjectCreateDto dto)
-    {
-        var basicAuth = new Octokit.Credentials(dto.GithubToken);
-        var client = new GitHubClient(new ProductHeaderValue(dto.RepositoryName))
-        {
-            Credentials = basicAuth
-        };
-        var repository = new NewRepository(dto.RepositoryName)
-        {
-            AutoInit = false,
-            Description = "",
-            LicenseTemplate = dto.License,
-            Private = dto.Private
-        };
-        Octokit.Repository? context = await client.Repository.Create(repository);
-        return context;
-    }
-
     public void CloneRepository(string path, Entities.Project project)
     {
-        //TODO: TEST THIS SHIT!!!
-        //I have no idea will it work or not
         if (!Directory.Exists(path))
             throw new ArgumentException("Directory does not exists");
+        
+        var client = new GitHubClient(new ProductHeaderValue(project.Name))
+        {
+            Credentials = new Octokit.Credentials(project.GithubToken)
+        };
+
+        if (client is null)
+        {
+            throw new AuthenticationException("Invalid token");
+        }
 
         LibGit2Sharp.Credentials credentials = new UsernamePasswordCredentials()
         {
-            Username = project.GithubToken,
-            Password = string.Empty
+            Username = client.Credentials.Login,
+            Password = project.GithubToken
             
         };
 
         if (Directory.GetFiles(path).Length == 0)
         {
-            var cloneOptions = new CloneOptions { BranchName = "master", Checkout = true, CredentialsProvider = (_, _, _) => credentials};
+            var cloneOptions = new CloneOptions { Checkout = true, CredentialsProvider = (_, _, _) => credentials};
             LibGit2Sharp.Repository.Clone(project.Uri.ToString(), path, cloneOptions);
             return;
         }
@@ -89,5 +80,23 @@ public class GithubService : IGithubService
         };
         
         LibGit2Sharp.Commands.Pull(repo, new LibGit2Sharp.Signature("ProjectService", "projectService@noreplay.com", DateTimeOffset.Now), pullOptions);
+    }
+    
+    private async Task<Octokit.Repository?> GenerateEmptyRepository(ProjectCreateDto dto)
+    {
+        var basicAuth = new Octokit.Credentials(dto.GithubToken);
+        var client = new GitHubClient(new ProductHeaderValue(dto.RepositoryName))
+        {
+            Credentials = basicAuth
+        };
+        var repository = new NewRepository(dto.RepositoryName)
+        {
+            AutoInit = false,
+            Description = "",
+            LicenseTemplate = dto.License,
+            Private = dto.Private
+        };
+        Octokit.Repository? context = await client.Repository.Create(repository);
+        return context;
     }
 }
