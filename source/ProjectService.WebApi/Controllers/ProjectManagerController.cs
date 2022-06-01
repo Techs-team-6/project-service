@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjectService.WebApi.Enums;
+using ProjectService.WebApi.Interfaces;
 using ProjectService.WebApi.Models;
 
 namespace ProjectService.WebApi.Controllers;
@@ -10,7 +11,7 @@ public class ProjectManagerController : ControllerBase
 {
     private readonly GitInfo _gitInfo;
 
-    public ProjectManagerController(GitInfo  gitInfo)
+    public ProjectManagerController(GitInfo gitInfo)
     { 
         _gitInfo = gitInfo;
     }

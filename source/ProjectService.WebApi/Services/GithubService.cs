@@ -29,7 +29,7 @@ public class GithubService : IGithubService
         var project = new Entities.Project(dto.Id, new Uri(repository.Url), dto.RepositoryName, string.Empty);
         string folder = _tempRepository.GetTempFolder(project);
         CloneRepository(folder, project);
-        project.BuildString = _creator.Create(folder);
+        project.BuildString = await _creator.Create(folder, dto.RepositoryName);
         return project;
     }
 
