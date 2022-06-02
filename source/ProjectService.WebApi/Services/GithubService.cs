@@ -95,14 +95,11 @@ public class GithubService : IGithubService
             Description = "",
             Private = dto.Private
         };
-
-        Octokit.Repository? context;
-
+        
         if (string.IsNullOrEmpty(_configuration.GithubOrganization))
-            context = await client.Repository.Create(repository);
-        else
-            context = await client.Repository.Create(_configuration.GithubOrganization, repository);
-        return context;
+            return await client.Repository.Create(repository);
+        
+        return await client.Repository.Create(_configuration.GithubOrganization, repository);
     }
 
     private LibGit2Sharp.Credentials GetLibGit2SharpCredentials()
