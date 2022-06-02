@@ -2,7 +2,7 @@ using System.Text;
 
 namespace ProjectService.WebApi.Exceptions;
 
-public class EntityNotFoundException<T> : Exception
+public class EntityNotFoundException<T> : ApplicationException
     where T : class
 {
     public EntityNotFoundException(object primaryKey, params object[] primaryKeys) 

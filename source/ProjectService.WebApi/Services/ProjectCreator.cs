@@ -1,4 +1,5 @@
-﻿using ProjectService.WebApi.Interfaces;
+﻿using ProjectService.WebApi.Exceptions;
+using ProjectService.WebApi.Interfaces;
 
 namespace ProjectService.WebApi.Services;
 
@@ -11,7 +12,7 @@ public class ProjectCreator : IProjectCreator
         await res.WaitForExitAsync();
         if(res.ExitCode != 0)
         {
-            throw new Exception("Error creating solution");
+            throw new GitException("Error creating solution");
         }
         
         string projectPath = Path.Combine(path, projectName);
@@ -21,7 +22,7 @@ public class ProjectCreator : IProjectCreator
         await res.WaitForExitAsync();
         if(res.ExitCode != 0)
         {
-            throw new Exception("Error creating project");
+            throw new GitException("Error creating project");
         }
 
         string csprojPath = Path.Combine(projectPath, $"{projectName}.csproj");
