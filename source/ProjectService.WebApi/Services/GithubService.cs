@@ -132,7 +132,7 @@ public class GithubService : IGithubService
         stringBuilder.AppendLine("      - name: Deploy");
         stringBuilder.AppendLine("        uses: fjogeleit/http-request-action@v1.9.1");
         stringBuilder.AppendLine("        with:");
-        stringBuilder.AppendLine($"          url: https://{_configuration.ProjectServiceAddress}/api/v1/projects/{project.Id}/builds/create");
+        stringBuilder.AppendLine($"          url: {_configuration.ProjectServiceAddress}/api/v1/projects/{project.Id}/builds/create");
         stringBuilder.AppendLine("          method: POST");
         return stringBuilder.ToString();
     }
