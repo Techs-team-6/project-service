@@ -8,9 +8,9 @@ public class BuildNotifier : IBuildNotifier
 {
     private readonly ProjectClient _client;
 
-    public BuildNotifier(ProjectClient client)
+    public BuildNotifier(IConfigurationWrapper configuration)
     {
-        _client = client;
+        _client = new ProjectClient(configuration.ServerAddress, new HttpClient());
     }
 
     public async Task NotifyOnBuildAsync(ProjectBuild build)
