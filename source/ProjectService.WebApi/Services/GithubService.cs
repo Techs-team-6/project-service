@@ -124,7 +124,7 @@ public class GithubService : IGithubService
         stringBuilder.AppendLine("on:");
         stringBuilder.AppendLine("  push:");
         stringBuilder.AppendLine("      branches:");
-        stringBuilder.AppendLine("      - master");
+        stringBuilder.AppendLine("      - main");
         stringBuilder.AppendLine("jobs:");
         stringBuilder.AppendLine("  deploy:");
         stringBuilder.AppendLine("      runs-on: ubuntu-latest");
