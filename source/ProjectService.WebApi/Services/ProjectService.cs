@@ -44,7 +44,7 @@ public class ProjectService : IProjectService
         return entry.Entity.Uri;
     }
 
-    public ProjectBuild CreateVersion(Guid projectId)
+    public async Task<ProjectBuild> CreateVersion(Guid projectId)
     {
         Project? project = _context.Projects.Find(projectId);
         if (project == null)
@@ -61,7 +61,7 @@ public class ProjectService : IProjectService
         EntityEntry<ProjectBuild> entry = _context.Builds.Add(build);
         _context.SaveChanges();
 
-        _buildNotifier.NotifyOnBuildAsync(entry.Entity);
+        await _buildNotifier.NotifyOnBuildAsync(entry.Entity);
         
         return entry.Entity;
     }
