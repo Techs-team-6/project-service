@@ -5,6 +5,7 @@ using Octokit;
 using ProjectService.WebApi.Enums;
 using ProjectService.WebApi.Interfaces;
 using ProjectService.WebApi.Models;
+using Credentials = LibGit2Sharp.Credentials;
 
 namespace ProjectService.WebApi.Services;
 
@@ -14,6 +15,9 @@ public class GithubService : IGithubService
     private readonly IProjectCreator _creator;
     private readonly GitInfo _gitInfo;
     private readonly IConfiguration _configuration;
+
+    private static readonly LibGit2Sharp.Identity Identity =
+        new Identity("ProjectService", "projectService@noreplay.com");
 
     public GithubService(ITempRepository tempRepository, IProjectCreator creator, GitInfo gitInfo, IConfiguration configuration)
     {
@@ -39,6 +43,9 @@ public class GithubService : IGithubService
         Directory.CreateDirectory(Path.Combine(folder, ".github"));
         Directory.CreateDirectory(Path.Combine(folder, ".github/workflows"));
         await File.WriteAllTextAsync(Path.Combine(folder, ".github/workflows/publish.yml"), workflowContent);
+        StageChanges(folder);
+        CommitChanges(folder, "init project");
+        PushChanges(folder, _gitInfo.GithubToken);
         return project;
     }
 
@@ -77,7 +84,7 @@ public class GithubService : IGithubService
         };
 
         LibGit2Sharp.Commands.Pull(repo,
-            new LibGit2Sharp.Signature("ProjectService", "projectService@noreplay.com", DateTimeOffset.Now),
+            new LibGit2Sharp.Signature(Identity, DateTimeOffset.Now),
             pullOptions);
     }
     
@@ -90,7 +97,7 @@ public class GithubService : IGithubService
         };
         var repository = new NewRepository(dto.RepositoryName)
         {
-            AutoInit = false,
+            AutoInit = true,
             Description = "",
             Private = dto.Private
         };
@@ -137,5 +144,47 @@ public class GithubService : IGithubService
         stringBuilder.AppendLine($"       url: https://{_configuration["ProjectServiceAddress"]}/api/v1/projects/{project.Id}/builds/create");
         stringBuilder.AppendLine("        method: POST");
         return stringBuilder.ToString();
+    }
+    
+    private void StageChanges(string path) {
+        try {
+            var repo = new LibGit2Sharp.Repository(path);
+            RepositoryStatus status = repo.RetrieveStatus();
+            var filePaths = status.Modified.Select(mods => mods.FilePath).ToList();
+            LibGit2Sharp.Commands.Stage(repo, filePaths);
+        }
+        catch (Exception ex) {
+            Console.WriteLine("Exception:RepoActions:StageChanges " + ex.Message);
+        }
+    }
+
+    private void CommitChanges(string path, string message)
+    {
+        try {
+            var repo = new LibGit2Sharp.Repository(path);
+            repo.Commit(message,
+                new LibGit2Sharp.Signature(Identity, DateTimeOffset.Now),
+                new LibGit2Sharp.Signature(Identity, DateTimeOffset.Now));
+        }
+        catch (Exception e) {
+            Console.WriteLine("Exception:RepoActions:CommitChanges " + e.Message);
+        }
+    }
+
+    private void PushChanges(string path, string token, string branchName = "master") {
+        Credentials cred = GetLibGit2SharpCredentials(token);
+        var repo = new LibGit2Sharp.Repository(path);
+        try {
+            var branch = repo.Branches[branchName];
+            var options = new PushOptions()
+            {
+                CredentialsProvider = (_, _, _) => cred,
+            };
+            
+            repo.Network.Push(branch, options);
+        }
+        catch (Exception e) {
+            Console.WriteLine("Exception:RepoActions:PushChanges " + e.Message);
+        }
     }
 }
