@@ -12,15 +12,18 @@ public class ProjectService : IProjectService
     private readonly ProjectDbContext _context;
     private readonly IGithubService _githubService;
     private readonly IProjectBuildService _buildService;
+    private readonly IConfigurationWrapper _configuration;
 
     public ProjectService(
         ProjectDbContext context,
         IGithubService githubService,
-        IProjectBuildService buildService)
+        IProjectBuildService buildService, 
+        IConfigurationWrapper configuration)
     {
         _context = context;
         _githubService = githubService;
         _buildService = buildService;
+        _configuration = configuration;
     }
 
     public async Task<Uri> AddProject(ProjectCreateDto project)
@@ -80,5 +83,10 @@ public class ProjectService : IProjectService
         _context.Update(project);
 
         return newBuildString;
+    }
+
+    public GitInfo GetGitInfo()
+    {
+        return new GitInfo(_configuration.GithubUsername, _configuration.GithubOrganization);
     }
 }

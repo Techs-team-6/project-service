@@ -1,5 +1,3 @@
-using ProjectService.WebApi.Enums;
-
 namespace ProjectService.WebApi.Interfaces;
 
 public interface IProjectCreator

@@ -3,11 +3,8 @@ using System.Text;
 using LibGit2Sharp;
 using Octokit;
 using Octokit.Internal;
-using ProjectService.WebApi.Enums;
 using ProjectService.WebApi.Interfaces;
 using ProjectService.WebApi.Models;
-using Branch = LibGit2Sharp.Branch;
-using Credentials = LibGit2Sharp.Credentials;
 
 namespace ProjectService.WebApi.Services;
 
@@ -15,23 +12,21 @@ public class GithubService : IGithubService
 {
     private readonly ITempRepository _tempRepository;
     private readonly IProjectCreator _creator;
-    private readonly GitInfo _gitInfo;
-    private readonly IConfiguration _configuration;
+    private readonly IConfigurationWrapper _configuration;
+    private const string AppName = "ProjectService";
 
-    private static readonly LibGit2Sharp.Identity Identity =
-        new Identity("ProjectService", "projectService@noreplay.com");
+    private static readonly Identity Identity = new("ProjectService", "projectService@noreplay.com");
 
-    public GithubService(ITempRepository tempRepository, IProjectCreator creator, GitInfo gitInfo, IConfiguration configuration)
+    public GithubService(ITempRepository tempRepository, IProjectCreator creator, IConfigurationWrapper configuration)
     {
         _tempRepository = tempRepository;
         _creator = creator;
-        _gitInfo = gitInfo;
         _configuration = configuration;
     }
 
     public async Task<Entities.Project> CreateProject(ProjectCreateDto dto)
     {
-        Octokit.Repository? repository = await GenerateEmptyRepository(dto);
+        Octokit.Repository? repository = await CreateEmptyRepository(dto);
         if (repository is null)
             throw new ArgumentException("Repository can not be created fore some magic reason");
 
@@ -39,7 +34,7 @@ public class GithubService : IGithubService
         string folder = _tempRepository.GetTempFolder(project);
         CloneRepository(folder, project);
         string csprojPath = await _creator.Create(folder, dto.RepositoryName);
-        string buildString = "dotnet build " + csprojPath;
+        string buildString = "dotnet build -c Release" + csprojPath;
         project.BuildString = buildString;
         string workflowContent = CreateWorkflow(project);
         Directory.CreateDirectory(Path.Combine(folder, ".github"));
@@ -60,7 +55,7 @@ public class GithubService : IGithubService
 
         if (Directory.GetFiles(path).Length == 0)
         {
-            var cloneOptions = new CloneOptions { Checkout = true, CredentialsProvider = (_url, _user, _cred) => credentials};
+            var cloneOptions = new CloneOptions {Checkout = true, CredentialsProvider = (_, _, _) => credentials};
             LibGit2Sharp.Repository.Clone(project.Uri.ToString(), path, cloneOptions);
             return;
         }
@@ -85,40 +80,42 @@ public class GithubService : IGithubService
             }
         };
 
-        LibGit2Sharp.Commands.Pull(repo,
+        Commands.Pull(repo,
             new LibGit2Sharp.Signature(Identity, DateTimeOffset.Now),
             pullOptions);
     }
-    
-    private async Task<Octokit.Repository?> GenerateEmptyRepository(ProjectCreateDto dto)
+
+    private async Task<Octokit.Repository?> CreateEmptyRepository(ProjectCreateDto dto)
     {
-        ICredentialStore store = new InMemoryCredentialStore(new Octokit.Credentials(_gitInfo.GithubToken));
-        var client = new GitHubClient(new ProductHeaderValue(dto.RepositoryName), store);
+        ICredentialStore store = new InMemoryCredentialStore(new Octokit.Credentials(_configuration.GithubToken));
+        var client = new GitHubClient(new ProductHeaderValue(AppName), store);
         var repository = new NewRepository(dto.RepositoryName)
         {
             AutoInit = true,
             Description = "",
             Private = dto.Private
         };
-        Octokit.Repository? context = await client.Repository.Create(repository);
+
+        Octokit.Repository? context;
+
+        if (string.IsNullOrEmpty(_configuration.GithubOrganization))
+            context = await client.Repository.Create(repository);
+        else
+            context = await client.Repository.Create(_configuration.GithubOrganization, repository);
         return context;
     }
 
     private LibGit2Sharp.Credentials GetLibGit2SharpCredentials()
     {
-        ICredentialStore store = new InMemoryCredentialStore(new Octokit.Credentials(_gitInfo.GithubToken));
-        var client = new GitHubClient(new ProductHeaderValue("cool-app"), store);
+        ICredentialStore store = new InMemoryCredentialStore(new Octokit.Credentials(_configuration.GithubToken));
+        var client = new GitHubClient(new ProductHeaderValue(AppName), store);
 
-        if (client is null)
-        {
-            throw new AuthenticationException("Invalid token");
-        }
+        if (client is null) throw new AuthenticationException("Invalid token");
 
         LibGit2Sharp.Credentials credentials = new UsernamePasswordCredentials()
         {
-            Username = _gitInfo.Login,
-            Password = _gitInfo.GithubToken
-            
+            Username = _configuration.GithubUsername,
+            Password = _configuration.GithubToken
         };
 
         return credentials;
@@ -138,53 +135,40 @@ public class GithubService : IGithubService
         stringBuilder.AppendLine("   - name:Deploy");
         stringBuilder.AppendLine("     uses: fjogeleit/http-request-action@v1");
         stringBuilder.AppendLine("     with:");
-        stringBuilder.AppendLine($"      url: https://{_configuration["ProjectServiceAddress"]}/api/v1/projects/{project.Id}/builds/create");
+        stringBuilder.AppendLine(
+            $"      url: https://{_configuration.ProjectServiceAddress}/api/v1/projects/{project.Id}/builds/create");
         stringBuilder.AppendLine("       method: POST");
         return stringBuilder.ToString();
     }
-    
-    private void StageChanges(string path) {
-        try {
-            var repo = new LibGit2Sharp.Repository(path);
-            RepositoryStatus status = repo.RetrieveStatus();
-            var filePaths = status.Added.Select(mods => mods.FilePath).ToList();
-            filePaths.AddRange(status.Modified.Select(mods => mods.FilePath).ToList());
-            filePaths.AddRange(status.Untracked.Select(mods => mods.FilePath).ToList());
-            LibGit2Sharp.Commands.Stage(repo, filePaths);
-        }
-        catch (Exception ex) {
-            Console.WriteLine("Exception:RepoActions:StageChanges " + ex.Message);
-        }
-    }
 
-    private void CommitChanges(string path, string message)
+    private void PushChanges(string path, string branchName = "main")
     {
-        try {
-            var repo = new LibGit2Sharp.Repository(path);
-            repo.Commit(message,
-                new LibGit2Sharp.Signature(Identity, DateTimeOffset.Now),
-                new LibGit2Sharp.Signature(Identity, DateTimeOffset.Now));
-        }
-        catch (Exception e) {
-            Console.WriteLine("Exception:RepoActions:CommitChanges " + e.Message);
-        }
+        LibGit2Sharp.Credentials cred = GetLibGit2SharpCredentials();
+        var repo = new LibGit2Sharp.Repository(path);
+        LibGit2Sharp.Branch? branch = repo.Branches[branchName];
+        var options = new PushOptions()
+        {
+            CredentialsProvider = (_, _, _) => cred
+        };
+
+        repo.Network.Push(branch, options);
     }
 
-    private void PushChanges(string path, string branchName = "main") {
-        Credentials cred = GetLibGit2SharpCredentials();
+    private static void StageChanges(string path)
+    {
         var repo = new LibGit2Sharp.Repository(path);
-        try {
-            Branch? branch = repo.Branches[branchName];
-            var options = new PushOptions()
-            {
-                CredentialsProvider = (_, _, _) => cred,
-                
-            };
-            
-            repo.Network.Push(branch, options);
-        }
-        catch (Exception e) {
-            Console.WriteLine("Exception:RepoActions:PushChanges " + e.Message);
-        }
+        RepositoryStatus status = repo.RetrieveStatus();
+        var filePaths = status.Added.Select(mods => mods.FilePath).ToList();
+        filePaths.AddRange(status.Modified.Select(mods => mods.FilePath).ToList());
+        filePaths.AddRange(status.Untracked.Select(mods => mods.FilePath).ToList());
+        Commands.Stage(repo, filePaths);
+    }
+
+    private static void CommitChanges(string path, string message)
+    {
+        var repo = new LibGit2Sharp.Repository(path);
+        repo.Commit(message,
+            new LibGit2Sharp.Signature(Identity, DateTimeOffset.Now),
+            new LibGit2Sharp.Signature(Identity, DateTimeOffset.Now));
     }
 }

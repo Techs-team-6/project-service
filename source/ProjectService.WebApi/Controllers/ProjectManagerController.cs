@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjectService.WebApi.Entities;
-using ProjectService.WebApi.Enums;
 using ProjectService.WebApi.Exceptions;
 using ProjectService.WebApi.Interfaces;
 using ProjectService.WebApi.Models;
@@ -11,22 +10,20 @@ namespace ProjectService.WebApi.Controllers;
 [Route("api/v1")]
 public class ProjectManagerController : ControllerBase
 {
-    private readonly GitInfo _gitInfo;
     private readonly IProjectService _projectService;
 
-    public ProjectManagerController(GitInfo gitInfo, IProjectService projectService)
+    public ProjectManagerController(IProjectService projectService)
     {
-        _gitInfo = gitInfo;
         _projectService = projectService;
     }
 
-    [HttpPost("Create")]
+    [HttpPost("project/create")]
     public ActionResult<string> CreateProject([FromBody] ProjectCreateDto projectCreateDto)
     {
         return _projectService.AddProject(projectCreateDto).ToString()!;
     }
     
-    [HttpPost("UpdateBuildString/{projectId}/{buildString}")]
+    [HttpPost("project/{projectId}/buildString/update/{buildString}")]
     public ActionResult UpdateBuildString(Guid projectId, string buildString)
     {
         if (_projectService.UpdateBuildString(projectId, buildString) is null)
@@ -35,7 +32,7 @@ public class ProjectManagerController : ControllerBase
         return Ok();
     }
 
-    [HttpGet("Get/{repositoryId:guid}/{id:int}")]
+    [HttpGet("project/{repositoryId:guid}/builds/{id:int}")]
     public ActionResult<byte[]> GetBuild([FromRoute] Guid repositoryId, [FromRoute] int id)
     {
 
@@ -53,15 +50,16 @@ public class ProjectManagerController : ControllerBase
         return bytes.ToArray();
     }
     
-    [HttpGet("GetInfo")]
-    public ActionResult<GitInfo> GetInfo()
+    [HttpGet("/git/info")]
+    public ActionResult<GitInfo> GetGiInfo()
     {
-        return _gitInfo;
+        return _projectService.GetGitInfo();
     }
-    
+
     [HttpPost("projects/{projectId}/builds/create")]
     public ActionResult CreateBuild(Guid projectId)
     {
-        throw new NotImplementedException();
+        _projectService.CreateVersion(projectId);
+        return Ok();
     }
 }
