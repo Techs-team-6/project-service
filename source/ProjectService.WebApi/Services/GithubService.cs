@@ -24,7 +24,7 @@ public class GithubService : IGithubService
         _configuration = configuration;
     }
 
-    public async Task<Entities.Project> CreateProject(ProjectCreateDto dto)
+    public async Task<Entities.Project> CreateProjectAsync(ProjectCreateDto dto)
     {
         Octokit.Repository? repository = await CreateEmptyRepository(dto);
         if (repository is null)
@@ -33,7 +33,7 @@ public class GithubService : IGithubService
         var project = new Entities.Project(dto.Id, new Uri(repository.CloneUrl), dto.RepositoryName, string.Empty);
         string folder = _tempRepository.GetTempFolder(project);
         CloneRepository(folder, project);
-        string csprojPath = await _creator.Create(folder, dto.RepositoryName);
+        string csprojPath = await _creator.CreateAsync(folder, dto.RepositoryName);
         string buildString = $"dotnet build \"{Path.Combine(project.Name, project.Name)}.csproj\" -c Release";
         project.BuildString = buildString;
         string workflowContent = CreateWorkflow(project);

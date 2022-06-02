@@ -2,5 +2,5 @@ namespace ProjectService.WebApi.Interfaces;
 
 public interface IProjectCreator
 {
-    public Task<string> Create(string path, string projectName);
+    public Task<string> CreateAsync(string path, string projectName);
 }

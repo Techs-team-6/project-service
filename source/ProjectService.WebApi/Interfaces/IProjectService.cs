@@ -5,8 +5,8 @@ namespace ProjectService.WebApi.Interfaces;
 
 public interface IProjectService
 {
-    public Task<Uri> AddProject(ProjectCreateDto project);
-    public Task<ProjectBuild> CreateVersion(Guid projectId);
+    public Task<Uri> AddProjectAsync(ProjectCreateDto project);
+    public Task<ProjectBuild> CreateVersionAsync(Guid projectId);
     public Stream GetProjectVersionArchive(Guid projectId, int buildId);
     public string? UpdateBuildString(Guid projectId, string newBuildString);
     public GitInfo GetGitInfo();

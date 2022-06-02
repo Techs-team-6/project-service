@@ -27,7 +27,7 @@ public class ProjectBuildService : IProjectBuildService
         _context = context;
     }
 
-    public async Task<ProjectBuild> CreateBuild(Project project)
+    public async Task<ProjectBuild> CreateBuildAsync(Project project)
     {
         // clone project into temporary folder
         string tempFolderPath = _tempRepository.GetTempFolder(project);

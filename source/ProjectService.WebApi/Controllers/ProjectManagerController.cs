@@ -20,7 +20,7 @@ public class ProjectManagerController : ControllerBase
     [HttpPost("project/create")]
     public ActionResult<string> CreateProject([FromBody] ProjectCreateDto projectCreateDto)
     {
-        return _projectService.AddProject(projectCreateDto).ToString()!;
+        return _projectService.AddProjectAsync(projectCreateDto).ToString()!;
     }
     
     [HttpPost("project/{projectId}/buildString/update/{buildString}")]
@@ -59,7 +59,7 @@ public class ProjectManagerController : ControllerBase
     [HttpPost("projects/{projectId}/builds/create")]
     public ActionResult CreateBuild(Guid projectId)
     {
-        _projectService.CreateVersion(projectId);
+        _projectService.CreateVersionAsync(projectId);
         return Ok();
     }
 }
