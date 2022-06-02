@@ -13,17 +13,20 @@ public class ProjectService : IProjectService
     private readonly IGithubService _githubService;
     private readonly IProjectBuildService _buildService;
     private readonly IConfigurationWrapper _configuration;
+    private readonly IBuildNotifier _buildNotifier;
 
     public ProjectService(
         ProjectDbContext context,
         IGithubService githubService,
         IProjectBuildService buildService, 
-        IConfigurationWrapper configuration)
+        IConfigurationWrapper configuration,
+        IBuildNotifier buildNotifier)
     {
         _context = context;
         _githubService = githubService;
         _buildService = buildService;
         _configuration = configuration;
+        _buildNotifier = buildNotifier;
     }
 
     public async Task<Uri> AddProject(ProjectCreateDto project)
@@ -41,7 +44,7 @@ public class ProjectService : IProjectService
         return entry.Entity.Uri;
     }
 
-    public ProjectBuild CreateVersion(Guid projectId)
+    public async Task<ProjectBuild> CreateVersion(Guid projectId)
     {
         Project? project = _context.Projects.Find(projectId);
         if (project == null)
@@ -57,6 +60,9 @@ public class ProjectService : IProjectService
 
         EntityEntry<ProjectBuild> entry = _context.Builds.Add(build);
         _context.SaveChanges();
+
+        await _buildNotifier.NotifyOnBuildAsync(entry.Entity);
+        
         return entry.Entity;
     }
 

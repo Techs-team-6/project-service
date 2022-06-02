@@ -1,6 +1,8 @@
 using ProjectService.WebApi.Interfaces;
+using ProjectService.WebApi.Notifiers;
 using ProjectService.WebApi.Services;
 using ProjectService.WebApi.Wrappers;
+using Server.API.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,7 @@ builder.Services.AddScoped<IProjectService, ProjectService.WebApi.Services.Proje
 builder.Services.AddScoped<IProjectBuildService, ProjectBuildService>();
 builder.Services.AddScoped<IGithubService, GithubService>();
 builder.Services.AddScoped<IConfigurationWrapper, ConfigurationWrapper>();
+builder.Services.AddScoped<IBuildNotifier, BuildNotifier>();
 
 var app = builder.Build();
 
