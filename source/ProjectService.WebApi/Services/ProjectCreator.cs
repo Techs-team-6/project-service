@@ -25,15 +25,15 @@ public class ProjectCreator : IProjectCreator
         }
 
         string csprojPath = Path.Combine(projectPath, $"{projectName}.csproj");
-        string slnPath = Path.Combine(path, $"{projectName}.sln");
-        string addString = $"add \"{csprojPath}\" \"{slnPath}\"";
-        
-        res = System.Diagnostics.Process.Start("dotnet", addString);
-        await res.WaitForExitAsync();
-        if(res.ExitCode != 0)
-        {
-            throw new Exception("Error adding project to solution");
-        }
+        // string slnPath = Path.Combine(path, $"{projectName}.sln");
+        // string addString = $"sln add \"{slnPath}\" \"{csprojPath}\"";
+        //
+        // res = System.Diagnostics.Process.Start("dotnet", addString);
+        // await res.WaitForExitAsync();
+        // if(res.ExitCode != 0)
+        // {
+        //     throw new Exception("Error adding project to solution");
+        // }
 
         return csprojPath;
     }
