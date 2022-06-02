@@ -41,7 +41,7 @@ public class ProjectService : IProjectService
         return entry.Entity.Uri;
     }
 
-    public ProjectBuild CreateVersion(Guid projectId)
+    public async Task<ProjectBuild> CreateVersion(Guid projectId)
     {
         Project? project = _context.Projects.Find(projectId);
         if (project == null)
@@ -49,7 +49,7 @@ public class ProjectService : IProjectService
             throw new EntityNotFoundException<Project>(projectId);
         }
 
-        ProjectBuild build = _buildService.CreateBuild(project);
+        ProjectBuild build = await _buildService.CreateBuild(project);
         if (_context.Builds.Find(build.Id, build.ProjectId) != null)
         {
             throw new EntityAlreadyExistsException<Project>(projectId);

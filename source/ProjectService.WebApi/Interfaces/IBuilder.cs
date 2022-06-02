@@ -2,5 +2,5 @@
 
 public interface IBuilder
 {
-    string Build(string path);
+    Task<string> Build(string path, string buildString);
 }
