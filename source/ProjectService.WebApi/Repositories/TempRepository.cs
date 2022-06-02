@@ -5,7 +5,7 @@ namespace ProjectService.WebApi.Repositories;
 
 public class TempRepository : ITempRepository
 {
-    private string _folder;
+    private readonly string _folder;
 
     public TempRepository(string folder)
     {
@@ -17,7 +17,7 @@ public class TempRepository : ITempRepository
 
     public string GetTempFolder(Project project)
     {
-        string path = Path.Combine(_folder, project.Name);
+        string path = Path.Combine(_folder, project.Id.ToString());
         if (!Directory.Exists(path))
         {
             Directory.CreateDirectory(path);
@@ -28,7 +28,7 @@ public class TempRepository : ITempRepository
 
     public string DeleteFolder(Project project)
     {
-        string path = Path.Combine(_folder, project.Name);
+        string path = Path.Combine(_folder, project.Id.ToString());
         if (Directory.Exists(path))
         {
             Directory.Delete(path);
@@ -40,13 +40,11 @@ public class TempRepository : ITempRepository
     public void Clean()
     {
         string path = Path.Combine(_folder);
-        if (Directory.Exists(path))
+        if (!Directory.Exists(path)) return;
+        string[] directories = Directory.GetDirectories(path);
+        foreach (string directory in directories)
         {
-            string[] directories = Directory.GetDirectories(path);
-            foreach (string directory in directories)
-            {
-                Directory.Delete(directory);
-            }
+            Directory.Delete(directory);
         }
     }
 }

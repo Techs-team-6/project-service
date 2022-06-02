@@ -2,7 +2,7 @@ using System.Text;
 
 namespace ProjectService.WebApi.Exceptions;
 
-public class EntityAlreadyExistsException<T> : Exception
+public class EntityAlreadyExistsException<T> : ApplicationException
 where T : class
 {
     public EntityAlreadyExistsException(object primaryKey, params object[] primaryKeys)

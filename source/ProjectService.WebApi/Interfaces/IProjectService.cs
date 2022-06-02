@@ -9,4 +9,5 @@ public interface IProjectService
     public ProjectBuild CreateVersion(Guid projectId);
     public Stream GetProjectVersionArchive(Guid projectId, int buildId);
     public string? UpdateBuildString(Guid projectId, string newBuildString);
+    public GitInfo GetGitInfo();
 }
