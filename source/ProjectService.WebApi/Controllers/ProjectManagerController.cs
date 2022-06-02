@@ -18,9 +18,9 @@ public class ProjectManagerController : ControllerBase
     }
 
     [HttpPost("project/create")]
-    public async Task<ActionResult<string>> CreateProject([FromBody] ProjectCreateDto projectCreateDto)
+    public async Task<ActionResult<Uri>> CreateProject([FromBody] ProjectCreateDto projectCreateDto)
     {
-        return (await _projectService.AddProjectAsync(projectCreateDto)).ToString()!;
+        return (await _projectService.AddProjectAsync(projectCreateDto));
     }
     
     [HttpPost("project/{projectId}/buildString/update/{buildString}")]
