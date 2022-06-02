@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic.CompilerServices;
+using ProjectService.WebApi.Database;
 using ProjectService.WebApi.Interfaces;
 using ProjectService.WebApi.Notifiers;
 using ProjectService.WebApi.Repositories;
@@ -13,6 +16,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+string? connectionString = builder.Configuration.GetSection("ConnectionString").Value;
+builder.Services.AddDbContext<ProjectDbContext>(options  => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<IProjectService, ProjectService.WebApi.Services.ProjectService>();
 builder.Services.AddScoped<IProjectBuildService, ProjectBuildService>();
 builder.Services.AddScoped<IGithubService, GithubService>();

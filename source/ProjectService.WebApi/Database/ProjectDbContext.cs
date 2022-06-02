@@ -13,4 +13,10 @@ public sealed class ProjectDbContext : DbContext
     {
         Database.EnsureCreated();
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Project>().HasKey(p => p.Id);
+        modelBuilder.Entity<ProjectBuild>().HasKey(p => new {p.Id, p.ProjectId});
+    }
 }
