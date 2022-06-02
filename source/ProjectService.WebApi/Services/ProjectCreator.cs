@@ -5,7 +5,7 @@ namespace ProjectService.WebApi.Services;
 
 public class ProjectCreator : IProjectCreator
 {
-    public async Task<string> Create(string path, string projectName)
+    public async Task<string> CreateAsync(string path, string projectName)
     {
         string solutionString = $"new sln --name \"{projectName}\" --output \"{path}\"";
         var res = System.Diagnostics.Process.Start("dotnet", solutionString);

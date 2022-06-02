@@ -24,7 +24,7 @@ public class GithubService : IGithubService
         _configuration = configuration;
     }
 
-    public async Task<Entities.Project> CreateProject(ProjectCreateDto dto)
+    public async Task<Entities.Project> CreateProjectAsync(ProjectCreateDto dto)
     {
         Octokit.Repository? repository = await CreateEmptyRepository(dto);
         if (repository is null)
@@ -33,7 +33,7 @@ public class GithubService : IGithubService
         var project = new Entities.Project(dto.Id, new Uri(repository.CloneUrl), dto.RepositoryName, string.Empty);
         string folder = _tempRepository.GetTempFolder(project);
         CloneRepository(folder, project);
-        string csprojPath = await _creator.Create(folder, dto.RepositoryName);
+        string csprojPath = await _creator.CreateAsync(folder, dto.RepositoryName);
         string buildString = $"dotnet build \"{Path.Combine(project.Name, project.Name)}.csproj\" -c Release";
         project.BuildString = buildString;
         string workflowContent = CreateWorkflow(project);
@@ -123,18 +123,17 @@ public class GithubService : IGithubService
         var stringBuilder = new StringBuilder();
         stringBuilder.AppendLine("on:");
         stringBuilder.AppendLine("  push:");
-        stringBuilder.AppendLine("   branches:");
-        stringBuilder.AppendLine("    - master");
+        stringBuilder.AppendLine("      branches:");
+        stringBuilder.AppendLine("      - main");
         stringBuilder.AppendLine("jobs:");
         stringBuilder.AppendLine("  deploy:");
-        stringBuilder.AppendLine("   runs-on: ubuntu-latest");
-        stringBuilder.AppendLine("   steps:");
-        stringBuilder.AppendLine("   - name:Deploy");
-        stringBuilder.AppendLine("     uses: fjogeleit/http-request-action@v1");
-        stringBuilder.AppendLine("     with:");
-        stringBuilder.AppendLine(
-            $"      url: https://{_configuration.ProjectServiceAddress}/api/v1/projects/{project.Id}/builds/create");
-        stringBuilder.AppendLine("       method: POST");
+        stringBuilder.AppendLine("      runs-on: ubuntu-latest");
+        stringBuilder.AppendLine("      steps:");
+        stringBuilder.AppendLine("      - name: Deploy");
+        stringBuilder.AppendLine("        uses: fjogeleit/http-request-action@v1.9.1");
+        stringBuilder.AppendLine("        with:");
+        stringBuilder.AppendLine($"          url: https://{_configuration.ProjectServiceAddress}/api/v1/projects/{project.Id}/builds/create");
+        stringBuilder.AppendLine("          method: POST");
         return stringBuilder.ToString();
     }
 

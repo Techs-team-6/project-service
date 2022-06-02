@@ -31,7 +31,7 @@ public class TempRepository : ITempRepository
         string path = Path.Combine(_folder, project.Id.ToString());
         if (Directory.Exists(path))
         {
-            Directory.Delete(path);
+            Directory.Delete(path, recursive: true);
         }
 
         return path;

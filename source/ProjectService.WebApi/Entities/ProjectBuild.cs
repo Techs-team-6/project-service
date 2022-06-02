@@ -15,10 +15,9 @@ public class ProjectBuild
 #pragma warning disable CS8618
     protected ProjectBuild() { }
 #pragma warning restore CS8618
-
-    [Column(Order = 0), Key]
+    
     public int Id { get; private init; }
-    [Column(Order = 1), Key, ForeignKey("ProjectId")]
+    [ForeignKey("ProjectId")]
     public Guid ProjectId { get; private init; }
     public Guid StorageId { get; private init;  }
 }

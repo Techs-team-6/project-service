@@ -29,14 +29,14 @@ public class ProjectService : IProjectService
         _buildNotifier = buildNotifier;
     }
 
-    public async Task<Uri> AddProject(ProjectCreateDto project)
+    public async Task<Uri> AddProjectAsync(ProjectCreateDto project)
     {
         if (await _context.Projects.FindAsync(project.Id) != null)
         { 
             throw new EntityAlreadyExistsException<Project>(project.Id);
         }
         
-        Project createdProject = await _githubService.CreateProject(project);
+        Project createdProject = await _githubService.CreateProjectAsync(project);
 
         EntityEntry<Project> entry = await _context.Projects.AddAsync(createdProject);
         await _context.SaveChangesAsync();
@@ -44,7 +44,7 @@ public class ProjectService : IProjectService
         return entry.Entity.Uri;
     }
 
-    public async Task<ProjectBuild> CreateVersion(Guid projectId)
+    public async Task<ProjectBuild> CreateVersionAsync(Guid projectId)
     {
         Project? project = _context.Projects.Find(projectId);
         if (project == null)
@@ -52,7 +52,7 @@ public class ProjectService : IProjectService
             throw new EntityNotFoundException<Project>(projectId);
         }
 
-        ProjectBuild build = await _buildService.CreateBuild(project);
+        ProjectBuild build = await _buildService.CreateBuildAsync(project);
         if (_context.Builds.Find(build.Id, build.ProjectId) != null)
         {
             throw new EntityAlreadyExistsException<Project>(projectId);
