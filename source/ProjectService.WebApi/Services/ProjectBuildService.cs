@@ -45,7 +45,7 @@ public class ProjectBuildService : IProjectBuildService
         }
 
         File.Delete(fullBuildZipName);
-        // Directory.Delete(buildFolderPath, recursive: true);
+        Directory.Delete(buildFolderPath, recursive: true);
 
         int newBuildId = GetLastBuildId(project) + 1;
 
@@ -81,7 +81,7 @@ public class ProjectBuildService : IProjectBuildService
     {
         ProjectBuild? lastBuild = _context.Builds
             .Where(build => build.ProjectId == project.Id)
-            .OrderBy(x => x.Id).FirstOrDefault();
+            .OrderByDescending(x => x.Id).FirstOrDefault();
 
         return lastBuild?.Id ?? defaultValue;
     }
