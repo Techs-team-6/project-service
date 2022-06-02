@@ -128,18 +128,18 @@ public class GithubService : IGithubService
     {
         var stringBuilder = new StringBuilder();
         stringBuilder.AppendLine("on:");
-        stringBuilder.AppendLine(" push:");
-        stringBuilder.AppendLine("  branches:");
-        stringBuilder.AppendLine("   - master");
-        stringBuilder.AppendLine("  jobs:");
-        stringBuilder.AppendLine("   deploy:");
-        stringBuilder.AppendLine("    runs-on: ubuntu-latest");
-        stringBuilder.AppendLine("    steps:");
-        stringBuilder.AppendLine("     - name:Deploy");
-        stringBuilder.AppendLine("       uses: fjogeleit/http-request-action@v1");
-        stringBuilder.AppendLine("       with:");
-        stringBuilder.AppendLine($"       url: https://{_configuration["ProjectServiceAddress"]}/api/v1/projects/{project.Id}/builds/create");
-        stringBuilder.AppendLine("        method: POST");
+        stringBuilder.AppendLine("  push:");
+        stringBuilder.AppendLine("   branches:");
+        stringBuilder.AppendLine("    - master");
+        stringBuilder.AppendLine("jobs:");
+        stringBuilder.AppendLine("  deploy:");
+        stringBuilder.AppendLine("   runs-on: ubuntu-latest");
+        stringBuilder.AppendLine("   steps:");
+        stringBuilder.AppendLine("   - name:Deploy");
+        stringBuilder.AppendLine("     uses: fjogeleit/http-request-action@v1");
+        stringBuilder.AppendLine("     with:");
+        stringBuilder.AppendLine($"      url: https://{_configuration["ProjectServiceAddress"]}/api/v1/projects/{project.Id}/builds/create");
+        stringBuilder.AppendLine("       method: POST");
         return stringBuilder.ToString();
     }
     
