@@ -1,5 +1,6 @@
 using ProjectService.WebApi.Interfaces;
 using ProjectService.WebApi.Notifiers;
+using ProjectService.WebApi.Repositories;
 using ProjectService.WebApi.Services;
 using ProjectService.WebApi.Wrappers;
 using Server.API.Client;
@@ -17,6 +18,12 @@ builder.Services.AddScoped<IProjectBuildService, ProjectBuildService>();
 builder.Services.AddScoped<IGithubService, GithubService>();
 builder.Services.AddScoped<IConfigurationWrapper, ConfigurationWrapper>();
 builder.Services.AddScoped<IBuildNotifier, BuildNotifier>();
+builder.Services.AddScoped<ITempRepository, TempRepository>(conf => new TempRepository(conf.GetService<IConfiguration>()!["TempPath"]!));
+builder.Services.AddScoped<IRepository, Repository>(conf => new Repository(conf.GetService<IConfiguration>()!["RepositoryPath"]!));
+builder.Services.AddScoped<IBuildNotifier, BuildNotifier>();
+builder.Services.AddScoped<IConfigurationWrapper, ConfigurationWrapper>();
+builder.Services.AddScoped<IBuilder, ProjectBuilder>();
+builder.Services.AddScoped<IProjectCreator, ProjectCreator>();
 
 var app = builder.Build();
 

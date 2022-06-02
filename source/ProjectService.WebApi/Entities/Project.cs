@@ -11,8 +11,7 @@ public class Project
         Name = name;
         BuildString = buildString;
     }
-
-    [Key]
+    
     public Guid Id { get; private set; }
     public Uri Uri { get; private set; }
     public string Name { get; private set; }
