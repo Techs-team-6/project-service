@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ProjectService.WebApi.Entities;
 using ProjectService.WebApi.Enums;
+using ProjectService.WebApi.Exceptions;
 using ProjectService.WebApi.Interfaces;
 using ProjectService.WebApi.Models;
 
@@ -10,28 +12,45 @@ namespace ProjectService.WebApi.Controllers;
 public class ProjectManagerController : ControllerBase
 {
     private readonly GitInfo _gitInfo;
+    private readonly IProjectService _projectService;
 
-    public ProjectManagerController(GitInfo gitInfo)
-    { 
+    public ProjectManagerController(GitInfo gitInfo, IProjectService projectService)
+    {
         _gitInfo = gitInfo;
+        _projectService = projectService;
     }
 
     [HttpPost("Create")]
     public ActionResult<string> CreateProject([FromBody] ProjectCreateDto projectCreateDto)
     {
-        throw new NotImplementedException();
+        return _projectService.AddProject(projectCreateDto).ToString()!;
     }
     
     [HttpPost("UpdateBuildString/{projectId}/{buildString}")]
     public ActionResult UpdateBuildString(Guid projectId, string buildString)
     {
-        throw new NotImplementedException();
+        if (_projectService.UpdateBuildString(projectId, buildString) is null)
+            return NotFound();
+
+        return Ok();
     }
 
     [HttpGet("Get/{repositoryId:guid}/{id:int}")]
-    public ActionResult<MemoryStream> GetBuild([FromRoute] Guid repositoryId, [FromRoute] int id)
+    public ActionResult<byte[]> GetBuild([FromRoute] Guid repositoryId, [FromRoute] int id)
     {
-        throw new NotImplementedException();
+
+        Span<byte> bytes = default;
+        try
+        {
+            using Stream buildStream = _projectService.GetProjectVersionArchive(repositoryId, GetHashCode());
+            buildStream.Read(bytes);
+        }
+        catch (EntityNotFoundException<ProjectBuild>)
+        {
+            return NotFound();
+        }
+        
+        return bytes.ToArray();
     }
     
     [HttpGet("GetInfo")]

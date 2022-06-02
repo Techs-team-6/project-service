@@ -57,7 +57,7 @@ public class ProjectService : IProjectService
         return entry.Entity;
     }
 
-    public MemoryStream GetProjectVersionArchive(Guid projectId, int buildId)
+    public Stream GetProjectVersionArchive(Guid projectId, int buildId)
     {
         ProjectBuild? build = _context.Builds.Find(buildId, projectId);
         if (build == null)
@@ -66,5 +66,19 @@ public class ProjectService : IProjectService
         }
 
         return _buildService.GetBuild(build);
+    }
+
+    public string? UpdateBuildString(Guid projectId, string newBuildString)
+    {
+        if (newBuildString == null) throw new ArgumentNullException(nameof(newBuildString));
+        
+        Project? project = _context.Projects.Find(projectId);
+        if (project is null)
+            return null;
+
+        project.BuildString = newBuildString;
+        _context.Update(project);
+
+        return newBuildString;
     }
 }

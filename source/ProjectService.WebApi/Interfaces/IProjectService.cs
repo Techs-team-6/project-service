@@ -7,5 +7,6 @@ public interface IProjectService
 {
     public Task<Uri> AddProject(ProjectCreateDto project);
     public ProjectBuild CreateVersion(Guid projectId);
-    public MemoryStream GetProjectVersionArchive(Guid projectId, int buildId);
+    public Stream GetProjectVersionArchive(Guid projectId, int buildId);
+    public string? UpdateBuildString(Guid projectId, string newBuildString);
 }
