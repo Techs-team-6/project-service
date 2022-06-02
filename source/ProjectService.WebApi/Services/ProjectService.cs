@@ -52,7 +52,7 @@ public class ProjectService : IProjectService
             throw new EntityNotFoundException<Project>(projectId);
         }
 
-        ProjectBuild build = _buildService.CreateBuild(project);
+        ProjectBuild build = await _buildService.CreateBuild(project);
         if (_context.Builds.Find(build.Id, build.ProjectId) != null)
         {
             throw new EntityAlreadyExistsException<Project>(projectId);

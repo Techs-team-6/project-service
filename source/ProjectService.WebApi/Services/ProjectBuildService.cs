@@ -27,14 +27,14 @@ public class ProjectBuildService : IProjectBuildService
         _context = context;
     }
 
-    public ProjectBuild CreateBuild(Project project)
+    public async Task<ProjectBuild> CreateBuild(Project project)
     {
         // clone project into temporary folder
         string tempFolderPath = _tempRepository.GetTempFolder(project);
         _githubService.CloneRepository(tempFolderPath, project);
 
         // build and compress
-        string buildFolderPath = _builder.Build(PathToClonedProject(tempFolderPath, project.Name));
+        string buildFolderPath = await _builder.Build(PathToClonedProject(tempFolderPath, project.Name), project.BuildString);
         string fullBuildZipName = CreateBuildArchive(buildFolderPath, tempFolderPath, project.Name);
 
         // save compressed in repository

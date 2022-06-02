@@ -34,7 +34,7 @@ public class GithubService : IGithubService
         string folder = _tempRepository.GetTempFolder(project);
         CloneRepository(folder, project);
         string csprojPath = await _creator.Create(folder, dto.RepositoryName);
-        string buildString = "dotnet build -c Release" + csprojPath;
+        string buildString = $"dotnet build \"{Path.Combine(project.Name, project.Name)}.csproj\" -c Release";
         project.BuildString = buildString;
         string workflowContent = CreateWorkflow(project);
         Directory.CreateDirectory(Path.Combine(folder, ".github"));
