@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net;
+using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Mvc;
 using ProjectService.WebApi.Entities;
 using ProjectService.WebApi.Exceptions;
 using ProjectService.WebApi.Interfaces;
@@ -18,9 +20,9 @@ public class ProjectManagerController : ControllerBase
     }
 
     [HttpPost("project/create")]
-    public async Task<ActionResult<string>> CreateProject([FromBody] ProjectCreateDto projectCreateDto)
+    public async Task<ActionResult<Uri>> CreateProject([FromBody] ProjectCreateDto projectCreateDto)
     {
-        return (await _projectService.AddProjectAsync(projectCreateDto)).ToString()!;
+        return (await _projectService.AddProjectAsync(projectCreateDto));
     }
     
     [HttpPost("project/{projectId}/buildString/update/{buildString}")]
@@ -48,7 +50,7 @@ public class ProjectManagerController : ControllerBase
         }
     }
     
-    [HttpGet("/git/info")]
+    [HttpGet("git/info")]
     public ActionResult<GitInfo> GetGiInfo()
     {
         return _projectService.GetGitInfo();
@@ -59,5 +61,15 @@ public class ProjectManagerController : ControllerBase
     {
         await _projectService.CreateVersionAsync(projectId);
         return Ok();
+    }
+    
+    [HttpGet]
+    [Route("DownloadZipFile/{storageId}")]
+    public IActionResult DownloadPdfFile(Guid storageId)
+    {
+        Stream file = _projectService.GetProjectVersionArchive(storageId);
+        FileStreamResult responce = File(file, "application/zip");
+        responce.FileDownloadName = "file.zip";
+        return responce;
     }
 }

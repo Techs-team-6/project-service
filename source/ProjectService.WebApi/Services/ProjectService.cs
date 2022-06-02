@@ -77,6 +77,17 @@ public class ProjectService : IProjectService
         return _buildService.GetBuild(build);
     }
 
+    public Stream GetProjectVersionArchive(Guid storageId)
+    {
+        ProjectBuild? build = _context.Builds.First(x => x.StorageId == storageId);
+        if (build == null)
+        {
+            throw new EntityNotFoundException<ProjectBuild>(storageId);
+        }
+
+        return _buildService.GetBuild(build);
+    }
+
     public string? UpdateBuildString(Guid projectId, string newBuildString)
     {
         if (newBuildString == null) throw new ArgumentNullException(nameof(newBuildString));
