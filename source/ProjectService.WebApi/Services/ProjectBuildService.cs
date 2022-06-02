@@ -34,14 +34,20 @@ public class ProjectBuildService : IProjectBuildService
         _githubService.CloneRepository(tempFolderPath, project);
 
         // build and compress
-        string buildFolderPath = await _builder.Build(PathToClonedProject(tempFolderPath, project.Name), project.BuildString);
+        string buildFolderPath = await _builder.Build(tempFolderPath, project.BuildString);
         string fullBuildZipName = CreateBuildArchive(buildFolderPath, tempFolderPath, project.Name);
 
         // save compressed in repository
-        Guid storageId =  _repository.SaveStream(File.OpenRead(fullBuildZipName));
+        Guid storageId;
+        await using (FileStream fs = File.OpenRead(fullBuildZipName))
+        {
+            storageId = _repository.SaveStream(fs);
+        }
+
+        File.Delete(fullBuildZipName);
+        // Directory.Delete(buildFolderPath, recursive: true);
+
         int newBuildId = GetLastBuildId(project) + 1;
-        
-        _tempRepository.DeleteFolder(project);
 
         return new ProjectBuild(newBuildId, storageId, project.Id);
     }
@@ -49,11 +55,6 @@ public class ProjectBuildService : IProjectBuildService
     public Stream GetBuild(ProjectBuild build)
     {
         return _repository.GetStream(build.StorageId);
-    }
-
-    private static string PathToClonedProject(string path, string projectName)
-    {
-        return Path.Combine(path, projectName);
     }
 
     private static string CreateBuildArchive(
@@ -80,7 +81,7 @@ public class ProjectBuildService : IProjectBuildService
     {
         ProjectBuild? lastBuild = _context.Builds
             .Where(build => build.ProjectId == project.Id)
-            .MaxBy(build => build.Id);
+            .OrderBy(x => x.Id).FirstOrDefault();
 
         return lastBuild?.Id ?? defaultValue;
     }

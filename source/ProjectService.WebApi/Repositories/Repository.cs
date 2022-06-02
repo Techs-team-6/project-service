@@ -27,7 +27,8 @@ public class Repository : IRepository
 
     public Stream GetStream(Guid id)
     {
-        if (!Directory.Exists(Path.Combine(_folder, id.ToString())))
+        string path = Path.Combine(_folder, id.ToString());
+        if (!File.Exists(path))
             throw new ArgumentException("this id does not exists");
         
         return new FileStream(Path.Combine(_folder, id.ToString()), FileMode.Open);

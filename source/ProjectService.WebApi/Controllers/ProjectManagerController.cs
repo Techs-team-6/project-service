@@ -33,21 +33,19 @@ public class ProjectManagerController : ControllerBase
     }
 
     [HttpGet("project/{repositoryId:guid}/builds/{id:int}")]
-    public ActionResult<byte[]> GetBuild([FromRoute] Guid repositoryId, [FromRoute] int id)
+    public async Task<ActionResult<byte[]>> GetBuild([FromRoute] Guid repositoryId, [FromRoute] int id)
     {
-
-        Span<byte> bytes = default;
         try
         {
-            using Stream buildStream = _projectService.GetProjectVersionArchive(repositoryId, GetHashCode());
-            buildStream.Read(bytes);
+            await using Stream buildStream = _projectService.GetProjectVersionArchive(repositoryId, id);
+            byte[] bytes = new byte[buildStream.Length];
+            await buildStream.ReadAsync(bytes, 0, (int) buildStream.Length);
+            return bytes.ToArray();
         }
         catch (EntityNotFoundException<ProjectBuild>)
         {
             return NotFound();
         }
-        
-        return bytes.ToArray();
     }
     
     [HttpGet("/git/info")]
@@ -57,9 +55,9 @@ public class ProjectManagerController : ControllerBase
     }
 
     [HttpPost("projects/{projectId}/builds/create")]
-    public ActionResult CreateBuild(Guid projectId)
+    public async Task<ActionResult> CreateBuild(Guid projectId)
     {
-        _projectService.CreateVersionAsync(projectId);
+        await _projectService.CreateVersionAsync(projectId);
         return Ok();
     }
 }
