@@ -9,7 +9,7 @@ public class ProjectBuilder : IBuilder
 {
     public async Task<string> Build(string path, string buildString)
     {
-        Guid id;
+        Guid id = Guid.Empty;
         do
         {
             id = Guid.NewGuid();
