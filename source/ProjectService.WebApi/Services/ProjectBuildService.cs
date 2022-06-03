@@ -67,7 +67,7 @@ public class ProjectBuildService : IProjectBuildService
             buildFolderPath,
             fullBuildZipName,
             CompressionLevel.Optimal,
-            includeBaseDirectory: true);
+            includeBaseDirectory: false);
 
         return fullBuildZipName;
     }
