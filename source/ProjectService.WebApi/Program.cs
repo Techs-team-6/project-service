@@ -1,12 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic.CompilerServices;
-using ProjectService.WebApi.Database;
-using ProjectService.WebApi.Interfaces;
-using ProjectService.WebApi.Notifiers;
-using ProjectService.WebApi.Repositories;
-using ProjectService.WebApi.Services;
-using ProjectService.WebApi.Wrappers;
-using Server.API.Client;
+using ProjectService.Core.Interfaces;
+using ProjectService.Core.Notifiers;
+using ProjectService.Core.Repositories;
+using ProjectService.Core.Services;
+using ProjectService.Core.Wrappers;
+using ProjectService.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +16,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 string? connectionString = builder.Configuration.GetSection("ConnectionString").Value;
 builder.Services.AddDbContext<ProjectDbContext>(options  => options.UseSqlServer(connectionString));
-builder.Services.AddScoped<IProjectService, ProjectService.WebApi.Services.ProjectService>();
+builder.Services.AddScoped<IProjectService, ProjectService.Core.Services.ProjectService>();
 builder.Services.AddScoped<IProjectBuildService, ProjectBuildService>();
 builder.Services.AddScoped<IGithubService, GithubService>();
 builder.Services.AddScoped<IConfigurationWrapper, ConfigurationWrapper>();
