@@ -18,6 +18,9 @@ jobs:
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 6.0.x
+          source-url: https://nuget.pkg.github.com/Techs-Team-6/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{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}}
       - name: Restore dependencies
         run: dotnet restore source/ProjectService.sln
       - name: Build
