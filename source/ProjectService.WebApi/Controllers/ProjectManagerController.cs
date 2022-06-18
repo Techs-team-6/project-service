@@ -1,10 +1,8 @@
-﻿using System.Net;
-using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Mvc;
-using ProjectService.WebApi.Entities;
-using ProjectService.WebApi.Exceptions;
-using ProjectService.WebApi.Interfaces;
-using ProjectService.WebApi.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using ProjectService.Core.Interfaces;
+using ProjectService.Shared.Entities;
+using ProjectService.Shared.Exceptions;
+using ProjectService.Shared.Models;
 
 namespace ProjectService.WebApi.Controllers;
 
