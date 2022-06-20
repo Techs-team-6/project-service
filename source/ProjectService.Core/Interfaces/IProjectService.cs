@@ -12,5 +12,5 @@ public interface IProjectService
     public Stream GetProjectVersionArchive(Guid storageId);
     public string? UpdateBuildString(Guid projectId, string newBuildString);
     public GitInfo GetGitInfo();
-    Task DeleteProject(Guid projectId);
+    Task DeleteProjectAsync(Guid projectId);
 }

@@ -6,5 +6,5 @@ public interface IProjectBuildService
 {
     Task<ProjectBuild> CreateBuildAsync(Project project);
     Stream GetBuild(ProjectBuild build);
-    Task DeleteAllBuilds(Guid projectId);
+    Task DeleteAllBuildsAsync(Guid projectId);
 }

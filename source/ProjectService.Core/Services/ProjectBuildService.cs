@@ -58,7 +58,7 @@ public class ProjectBuildService : IProjectBuildService
         return _repository.GetStream(build.StorageId);
     }
 
-    public async Task DeleteAllBuilds(Guid projectId)
+    public async Task DeleteAllBuildsAsync(Guid projectId)
     {
         List<ProjectBuild> builds = await _context.Builds
             .Where(build => build.ProjectId == projectId)
