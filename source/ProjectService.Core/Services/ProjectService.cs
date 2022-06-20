@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using ProjectService.Core.Interfaces;
 using ProjectService.Database;
@@ -64,6 +65,17 @@ public class ProjectService : IProjectService
         await _buildNotifier.NotifyOnBuildAsync(entry.Entity);
         
         return entry.Entity;
+    }
+
+    public async Task<Project> GetProjectAsync(Guid projectId)
+    {
+        Project? project = await _context.Projects
+            .FirstOrDefaultAsync(project => project.Id == projectId);
+        if (project == null)
+        {
+            throw new EntityNotFoundException<Project>(projectId);
+        }
+        return project;
     }
 
     public Stream GetProjectVersionArchive(Guid projectId, int buildId)
