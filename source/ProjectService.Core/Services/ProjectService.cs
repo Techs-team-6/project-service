@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using ProjectService.Core.Interfaces;
 using ProjectService.Database;
@@ -66,6 +67,17 @@ public class ProjectService : IProjectService
         return entry.Entity;
     }
 
+    public async Task<Project> GetProjectAsync(Guid projectId)
+    {
+        Project? project = await _context.Projects
+            .FirstOrDefaultAsync(project => project.Id == projectId);
+        if (project == null)
+        {
+            throw new EntityNotFoundException<Project>(projectId);
+        }
+        return project;
+    }
+
     public Stream GetProjectVersionArchive(Guid projectId, int buildId)
     {
         ProjectBuild? build = _context.Builds.Find(buildId, projectId);
@@ -105,5 +117,19 @@ public class ProjectService : IProjectService
     public GitInfo GetGitInfo()
     {
         return new GitInfo(_configuration.GithubUsername, _configuration.GithubOrganization);
+    }
+
+    public async Task DeleteProjectAsync(Guid projectId)
+    {
+        Project? project = await _context.Projects
+            .FirstOrDefaultAsync(project => project.Id == projectId);
+        if (project == null)
+        {
+            throw new EntityNotFoundException<Project>(projectId);
+        }
+
+        await _buildService.DeleteAllBuildsAsync(project.Id);
+        _context.Projects.Remove(project);
+        await _context.SaveChangesAsync();
     }
 }
