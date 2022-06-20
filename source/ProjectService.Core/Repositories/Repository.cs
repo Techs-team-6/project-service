@@ -33,4 +33,13 @@ public class Repository : IRepository
         
         return new FileStream(Path.Combine(_folder, id.ToString()), FileMode.Open);
     }
+
+    public void Delete(Guid id)
+    {
+        string path = Path.Combine(_folder, id.ToString());
+        if (!File.Exists(path))
+            throw new ArgumentException("this id does not exists");
+        
+        File.Delete(path);
+    }
 }

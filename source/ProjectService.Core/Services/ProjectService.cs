@@ -118,4 +118,18 @@ public class ProjectService : IProjectService
     {
         return new GitInfo(_configuration.GithubUsername, _configuration.GithubOrganization);
     }
+
+    public async Task DeleteProject(Guid projectId)
+    {
+        Project? project = await _context.Projects
+            .FirstOrDefaultAsync(project => project.Id == projectId);
+        if (project == null)
+        {
+            throw new EntityNotFoundException<Project>(projectId);
+        }
+
+        await _buildService.DeleteAllBuilds(project.Id);
+        _context.Projects.Remove(project);
+        await _context.SaveChangesAsync();
+    }
 }

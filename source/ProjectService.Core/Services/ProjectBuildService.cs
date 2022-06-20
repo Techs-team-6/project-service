@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using Microsoft.EntityFrameworkCore;
 using ProjectService.Core.Interfaces;
 using ProjectService.Database;
 using ProjectService.Shared.Entities;
@@ -55,6 +56,21 @@ public class ProjectBuildService : IProjectBuildService
     public Stream GetBuild(ProjectBuild build)
     {
         return _repository.GetStream(build.StorageId);
+    }
+
+    public async Task DeleteAllBuilds(Guid projectId)
+    {
+        List<ProjectBuild> builds = await _context.Builds
+            .Where(build => build.ProjectId == projectId)
+            .ToListAsync();
+
+        foreach (ProjectBuild build in builds)
+        {
+            _repository.Delete(build.StorageId);
+        }
+        
+        _context.RemoveRange(builds);
+        await _context.SaveChangesAsync();
     }
 
     private static string CreateBuildArchive(
