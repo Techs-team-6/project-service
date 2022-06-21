@@ -20,5 +20,8 @@ public sealed class ProjectDbContext : DbContext
         modelBuilder.Entity<Project>().HasKey(p => p.Id);
         modelBuilder.Entity<ProjectBuild>().HasKey(p => new {p.Id, p.ProjectId});
         modelBuilder.Entity<ProjectTemplate>().HasKey(t => t.Id);
+        modelBuilder.Entity<ProjectTemplate>()
+            .Property(t => t.Id)
+            .ValueGeneratedOnAdd();
     }
 }
