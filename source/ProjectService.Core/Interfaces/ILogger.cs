@@ -14,18 +14,29 @@ public interface ILogger
         {
             if (logString[i] == '%' && (i == 0 || logString[i - 1] != '\\'))
             {
-                if (logString.Substring(i, 3) == "%dt")
+                try
                 {
-                    logString = logString.Remove(i, 3);
-                    logString = logString.Insert(i, dateTime.ToString(CultureInfo.InvariantCulture));
-                    continue;
+                    if (logString.Substring(i, 3) == "%dt")
+                    {
+                        logString = logString.Remove(i, 3);
+                        logString = logString.Insert(i, dateTime.ToString(CultureInfo.InvariantCulture));
+                        continue;
+                    }
                 }
-                if (logString.Substring(i, 4) == "%msg")
+                catch (ArgumentOutOfRangeException)
+                { }
+
+                try
                 {
-                    logString = logString.Remove(i, 4);
-                    logString = logString.Insert(i, msg);
-                    continue;
+                    if (logString.Substring(i, 4) == "%msg")
+                    {
+                        logString = logString.Remove(i, 4);
+                        logString = logString.Insert(i, msg);
+                        continue;
+                    }
                 }
+                catch (ArgumentOutOfRangeException)
+                { }
             }
             
         }
