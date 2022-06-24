@@ -4,9 +4,14 @@ namespace ProjectService.Core.Interfaces;
 
 public interface ILogger
 {
+    /**
+     * <param name="msg">message to log</param>
+     * <param name="dateTime">Date and Time of log</param>
+     * <param name="pattern">%dt - DateTime %msg - message</param>
+     */
     void Log(string msg, DateTime dateTime = default, string pattern = "[%dt]: %msg");
 
-    static string GetLogString(string msg, DateTime dateTime, string pattern)
+    protected static string GetLogString(string msg, DateTime dateTime, string pattern)
     {
         string logString = pattern;
         int i = -1;
