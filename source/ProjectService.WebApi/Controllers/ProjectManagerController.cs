@@ -18,9 +18,9 @@ public class ProjectManagerController : ControllerBase
     }
 
     [HttpPost("project/create")]
-    public async Task<ActionResult<Uri>> CreateProject([FromBody] ProjectCreateDto projectCreateDto)
+    public async Task<ActionResult<Uri>> CreateProject([FromBody] ProjectCreateDto projectCreateDto, [FromQuery] Guid templateId = default)
     {
-        return (await _projectService.AddProjectAsync(projectCreateDto));
+        return await _projectService.AddProjectAsync(projectCreateDto, templateId);
     }
     
     [HttpPost("project/{projectId}/buildString/update/{buildString}")]
@@ -49,7 +49,7 @@ public class ProjectManagerController : ControllerBase
     }
     
     [HttpGet("git/info")]
-    public ActionResult<GitInfo> GetGiInfo()
+    public ActionResult<GitInfo> GetGitInfo()
     {
         return _projectService.GetGitInfo();
     }

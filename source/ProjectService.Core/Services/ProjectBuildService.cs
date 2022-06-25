@@ -13,19 +13,21 @@ public class ProjectBuildService : IProjectBuildService
     private readonly IBuilder _builder;
     private readonly IRepository _repository;
     private readonly ProjectDbContext _context;
+    private readonly IArchiver _archiver;
 
     public ProjectBuildService(
         IGithubService githubService,
         ITempRepository tempRepository,
         IBuilder builder,
         IRepository repository,
-        ProjectDbContext context)
+        ProjectDbContext context, IArchiver archiver)
     {
         _githubService = githubService;
         _tempRepository = tempRepository;
         _builder = builder;
         _repository = repository;
         _context = context;
+        _archiver = archiver;
     }
 
     public async Task<ProjectBuild> CreateBuildAsync(Project project)
@@ -36,16 +38,15 @@ public class ProjectBuildService : IProjectBuildService
 
         // build and compress
         string buildFolderPath = await _builder.Build(tempFolderPath, project.BuildString);
-        string fullBuildZipName = CreateBuildArchive(buildFolderPath, tempFolderPath, project.Name);
 
         // save compressed in repository
         Guid storageId;
-        await using (FileStream fs = File.OpenRead(fullBuildZipName))
+        await using (Stream fs = _archiver.CompressStream(buildFolderPath))
         {
             storageId = _repository.SaveStream(fs);
         }
-
-        File.Delete(fullBuildZipName);
+        
+        
         Directory.Delete(buildFolderPath, recursive: true);
 
         int newBuildId = GetLastBuildId(project) + 1;
@@ -71,26 +72,6 @@ public class ProjectBuildService : IProjectBuildService
         
         _context.RemoveRange(builds);
         await _context.SaveChangesAsync();
-    }
-
-    private static string CreateBuildArchive(
-        string buildFolderPath,
-        string tempFolderPath,
-        string projectName)
-    {
-        string fullBuildZipName = FullBuildZipName(tempFolderPath, projectName);
-        ZipFile.CreateFromDirectory(
-            buildFolderPath,
-            fullBuildZipName,
-            CompressionLevel.Optimal,
-            includeBaseDirectory: false);
-
-        return fullBuildZipName;
-    }
-
-    private static string FullBuildZipName(string pathToZip, string projectName)
-    {
-        return Path.Combine(pathToZip, $"{projectName}.zip");
     }
 
     private int GetLastBuildId(Project project, int defaultValue = 0)
