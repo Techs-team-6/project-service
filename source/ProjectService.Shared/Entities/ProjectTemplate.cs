@@ -2,9 +2,9 @@ namespace ProjectService.Shared.Entities;
 
 public class ProjectTemplate
 {
-    public ProjectTemplate(Guid storageId, string name, string buildString)
+    public ProjectTemplate(Guid id, Guid storageId, string name, string buildString)
     {
-        Id = Guid.Empty;
+        Id = id;
         StorageId = storageId;
         Name = name;
         BuildString = buildString;
