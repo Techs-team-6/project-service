@@ -104,9 +104,7 @@ public class ProjectService : IProjectService
     {
         if (newBuildString == null) throw new ArgumentNullException(nameof(newBuildString));
         
-        Project? project = _context.Projects.Find(projectId);
-        if (project is null)
-            return null;
+        Project project = _context.Projects.Find(projectId) ?? throw new EntityNotFoundException<Project>(projectId);
 
         project.BuildString = newBuildString;
         _context.Update(project);
