@@ -19,12 +19,12 @@ public class TemplatesController : Controller
     [HttpPost("create")]
     public ActionResult<Guid> CreateTemplate(
         [FromForm] IFormFile zip,
-        [FromQuery] string name,
+        [FromQuery] string templateName,
         [FromQuery] string buildString)
     {
         using Stream stream = zip.OpenReadStream();
         ProjectTemplate createdTemplate = 
-            _templateService.CreateProjectTemplate(stream, name, buildString);
+            _templateService.CreateProjectTemplate(stream, templateName, buildString);
         return Ok(createdTemplate.Id);
     }
 
