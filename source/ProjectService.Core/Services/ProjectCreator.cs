@@ -6,10 +6,10 @@ namespace ProjectService.Core.Services;
 
 public class ProjectCreator : IProjectCreator
 {
-    private TemplateService _templateService;
+    private ITemplateService _templateService;
     private IArchiver _archiver;
 
-    public ProjectCreator(TemplateService templateService, IArchiver archiver)
+    public ProjectCreator(ITemplateService templateService, IArchiver archiver)
     {
         _templateService = templateService;
         _archiver = archiver;

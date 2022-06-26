@@ -14,12 +14,12 @@ public class GithubService : IGithubService
     private readonly ITempRepository _tempRepository;
     private readonly IProjectCreator _creator;
     private readonly IConfigurationWrapper _configuration;
-    private readonly TemplateService _templateService;
+    private readonly ITemplateService _templateService;
     private const string AppName = "ProjectService";
 
     private static readonly Identity Identity = new("ProjectService", "projectService@noreplay.com");
 
-    public GithubService(ITempRepository tempRepository, IProjectCreator creator, IConfigurationWrapper configuration, TemplateService templateService)
+    public GithubService(ITempRepository tempRepository, IProjectCreator creator, IConfigurationWrapper configuration, ITemplateService templateService)
     {
         _tempRepository = tempRepository;
         _creator = creator;
