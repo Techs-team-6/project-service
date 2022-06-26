@@ -30,14 +30,14 @@ public class ProjectService : IProjectService
         _buildNotifier = buildNotifier;
     }
 
-    public async Task<Uri> AddProjectAsync(ProjectCreateDto project)
+    public async Task<Uri> AddProjectAsync(ProjectCreateDto project, Guid templateId)
     {
         if (await _context.Projects.FindAsync(project.Id) != null)
         { 
             throw new EntityAlreadyExistsException<Project>(project.Id);
         }
         
-        Project createdProject = await _githubService.CreateProjectAsync(project);
+        Project createdProject = await _githubService.CreateProjectAsync(project, templateId);
 
         EntityEntry<Project> entry = await _context.Projects.AddAsync(createdProject);
         await _context.SaveChangesAsync();

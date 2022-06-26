@@ -1,11 +1,35 @@
-﻿using ProjectService.Core.Interfaces;
+﻿using System.Security.Cryptography.X509Certificates;
+using ProjectService.Core.Interfaces;
 using ProjectService.Shared.Exceptions;
 
 namespace ProjectService.Core.Services;
 
 public class ProjectCreator : IProjectCreator
 {
-    public async Task<string> CreateAsync(string path, string projectName)
+    private TemplateService _templateService;
+    private IArchiver _archiver;
+
+    public ProjectCreator(TemplateService templateService, IArchiver archiver)
+    {
+        _templateService = templateService;
+        _archiver = archiver;
+    }
+
+    public async Task<string> CreateAsync(string path, string projectName, Guid templateId = default)
+    {
+        if (templateId == default)
+        {
+            return await CreateConsoleAsync(path, projectName);
+        }
+
+        await using Stream template = _templateService.GetTemplateZip(templateId);
+
+        _archiver.DecompressStream(path, template);
+
+        return path;
+    }
+    
+    private async Task<string> CreateConsoleAsync(string path, string projectName)
     {
         string solutionString = $"new sln --name \"{projectName}\" --output \"{path}\"";
         var res = System.Diagnostics.Process.Start("dotnet", solutionString);
@@ -26,16 +50,6 @@ public class ProjectCreator : IProjectCreator
         }
 
         string csprojPath = Path.Combine(projectPath, $"{projectName}.csproj");
-        // string slnPath = Path.Combine(path, $"{projectName}.sln");
-        // string addString = $"sln add \"{slnPath}\" \"{csprojPath}\"";
-        //
-        // res = System.Diagnostics.Process.Start("dotnet", addString);
-        // await res.WaitForExitAsync();
-        // if(res.ExitCode != 0)
-        // {
-        //     throw new Exception("Error adding project to solution");
-        // }
-
         return csprojPath;
     }
 }

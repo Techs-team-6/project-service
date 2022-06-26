@@ -14,18 +14,20 @@ public class GithubService : IGithubService
     private readonly ITempRepository _tempRepository;
     private readonly IProjectCreator _creator;
     private readonly IConfigurationWrapper _configuration;
+    private readonly TemplateService _templateService;
     private const string AppName = "ProjectService";
 
     private static readonly Identity Identity = new("ProjectService", "projectService@noreplay.com");
 
-    public GithubService(ITempRepository tempRepository, IProjectCreator creator, IConfigurationWrapper configuration)
+    public GithubService(ITempRepository tempRepository, IProjectCreator creator, IConfigurationWrapper configuration, TemplateService templateService)
     {
         _tempRepository = tempRepository;
         _creator = creator;
         _configuration = configuration;
+        _templateService = templateService;
     }
 
-    public async Task<Project> CreateProjectAsync(ProjectCreateDto dto)
+    public async Task<Project> CreateProjectAsync(ProjectCreateDto dto, Guid templateId)
     {
         Octokit.Repository? repository = await CreateEmptyRepository(dto);
         if (repository is null)
@@ -34,8 +36,12 @@ public class GithubService : IGithubService
         var project = new Project(dto.Id, new Uri(repository.CloneUrl), dto.RepositoryName, string.Empty);
         string folder = _tempRepository.GetTempFolder(project);
         CloneRepository(folder, project);
-        string csprojPath = await _creator.CreateAsync(folder, dto.RepositoryName);
-        string buildString = $"dotnet build \"{Path.Combine(project.Name, project.Name)}.csproj\" -c Release";
+        await _creator.CreateAsync(folder, dto.RepositoryName, templateId);
+        string buildString = 
+            templateId != default 
+            ? $"dotnet build \"{Path.Combine(project.Name, project.Name)}.csproj\" -c Release" 
+            : _templateService.GetTemplateBuildString(templateId);
+        
         project.BuildString = buildString;
         string workflowContent = CreateWorkflow(project);
         Directory.CreateDirectory(Path.Combine(folder, ".github"));
