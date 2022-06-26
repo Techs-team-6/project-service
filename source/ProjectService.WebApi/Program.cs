@@ -16,7 +16,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 string? connectionString = builder.Configuration.GetSection("ConnectionString").Value;
-builder.Services.AddDbContext<ProjectDbContext>(options  => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<ProjectDbContext>(options  => options.UseSqlite(connectionString));
 builder.Services.AddScoped<IProjectService, ProjectService.Core.Services.ProjectService>();
 builder.Services.AddScoped<IProjectBuildService, ProjectBuildService>();
 builder.Services.AddScoped<IGithubService, GithubService>();
