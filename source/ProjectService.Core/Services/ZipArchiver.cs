@@ -8,11 +8,19 @@ public class ZipArchiver : IArchiver
 {
     public Stream CompressStream(string path)
     {
-        string file = Path.GetTempFileName();
+        string tempPath = Path.GetTempPath();
+        string fileName;
+
+        do
+        {
+            fileName = $"{Guid.NewGuid()}.tmp";
+        } while (File.Exists(Path.Combine(tempPath, fileName)));
+
+        string file = Path.Combine(tempPath, fileName);
 
         ZipFile.CreateFromDirectory(
-            sourceDirectoryName: Path.GetDirectoryName(file) ?? throw new InvalidOperationException(),
-            Path.GetFileName(file),
+            path,
+            file,
             CompressionLevel.Optimal,
             includeBaseDirectory: false);
 

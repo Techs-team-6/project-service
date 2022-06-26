@@ -18,7 +18,7 @@ public class TemplatesController : Controller
 
     [HttpPost("create")]
     public ActionResult<Guid> CreateTemplate(
-        [FromForm] IFormFile zip,
+        [FromBody] IFormFile zip,
         [FromQuery] string templateName,
         [FromQuery] string buildString)
     {
