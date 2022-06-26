@@ -16,7 +16,7 @@ public class ZipArchiver : IArchiver
             CompressionLevel.Optimal,
             includeBaseDirectory: false);
 
-        return new FileStream(Path.GetTempFileName(),
+        return new FileStream(file,
             FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None,
             4096, FileOptions.RandomAccess | FileOptions.DeleteOnClose);
     }

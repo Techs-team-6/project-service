@@ -38,7 +38,7 @@ public class GithubService : IGithubService
         CloneRepository(folder, project);
         await _creator.CreateAsync(folder, dto.RepositoryName, templateId);
         string buildString = 
-            templateId != default 
+            templateId == default 
             ? $"dotnet build \"{Path.Combine(project.Name, project.Name)}.csproj\" -c Release" 
             : _templateService.GetTemplateBuildString(templateId);
         
