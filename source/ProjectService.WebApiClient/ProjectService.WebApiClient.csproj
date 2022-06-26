@@ -4,6 +4,12 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <PackageId>ProjectServiceClient</PackageId>
+        <Version>1.1.2</Version>
+        <Authors>ProjectServiceClient</Authors>
+        <Company>Tech6thTeam</Company>
+        <PackageDescription>ProjectService RestApi Client</PackageDescription>
+        <RepositoryUrl>https://github.com/Techs-team-6/project-service</RepositoryUrl>
     </PropertyGroup>
 
     <PropertyGroup>
