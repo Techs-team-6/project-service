@@ -24,6 +24,7 @@
 
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+      <PackageReference Include="NLog.Config" Version="4.7.15" />
       <PackageReference Include="NSwag.MSBuild" Version="13.16.1">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -37,7 +38,7 @@
         </Exec>
     </Target>
     <Target Name="forceReGenerationOnRebuild" AfterTargets="CoreClean">
-        <Delete Files="$(ClientClassName).cs"/>
+        <Delete Files="$(ClientClassName).cs" />
     </Target>
 
 </Project>

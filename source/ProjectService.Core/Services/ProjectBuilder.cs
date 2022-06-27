@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using NLog;
+using ProjectService.Core.Entities;
 using ProjectService.Core.Interfaces;
 using ProjectService.Shared.Exceptions;
 
@@ -6,6 +8,13 @@ namespace ProjectService.Core.Services;
 
 public class ProjectBuilder : IBuilder
 {
+    private readonly Logger _logger;
+
+    public ProjectBuilder()
+    {
+        _logger = LoggerKeeper.GetInstance().Logger;
+    }
+
     public async Task<string> Build(string path, string buildString)
     {
         Guid id = Guid.Empty;
