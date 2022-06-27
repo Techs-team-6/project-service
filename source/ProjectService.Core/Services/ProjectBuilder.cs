@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using NLog;
-using ProjectService.Core.Entities;
 using ProjectService.Core.Interfaces;
 using ProjectService.Shared.Exceptions;
 

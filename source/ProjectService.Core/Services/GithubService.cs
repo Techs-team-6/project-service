@@ -5,7 +5,6 @@ using NLog;
 using NLog.Fluent;
 using Octokit;
 using Octokit.Internal;
-using ProjectService.Core.Entities;
 using ProjectService.Core.Interfaces;
 using ProjectService.Shared.Models;
 using LogLevel = NLog.LogLevel;
