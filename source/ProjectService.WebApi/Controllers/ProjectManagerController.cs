@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NLog;
 using ProjectService.Core.Interfaces;
 using ProjectService.Shared.Entities;
 using ProjectService.Shared.Exceptions;
 using ProjectService.Shared.Models;
 using Server.API.Client.Contracts;
+using LogLevel = NLog.LogLevel;
 using Project = ProjectService.Shared.Entities.Project;
 
 namespace ProjectService.WebApi.Controllers;
@@ -13,10 +15,12 @@ namespace ProjectService.WebApi.Controllers;
 public class ProjectManagerController : ControllerBase
 {
     private readonly IProjectService _projectService;
+    private readonly Logger _logger;
 
-    public ProjectManagerController(IProjectService projectService)
+    public ProjectManagerController(IProjectService projectService, Logger logger)
     {
         _projectService = projectService;
+        _logger = logger;
     }
 
     [HttpPost("project/create")]
@@ -28,6 +32,7 @@ public class ProjectManagerController : ControllerBase
         }
         catch (EntityAlreadyExistsException<Project> e)
         {
+            _logger.Log(LogLevel.Warn, e, "Project with such id already created!");
             return Conflict("Project with such id already created");
         }
     }
@@ -41,6 +46,7 @@ public class ProjectManagerController : ControllerBase
         }
         catch (EntityNotFoundException<Project> e)
         {
+            _logger.Log(LogLevel.Warn, e, e.Message);
             return NotFound(e.Message);
         }
         return Ok();
@@ -58,6 +64,7 @@ public class ProjectManagerController : ControllerBase
         }
         catch (EntityNotFoundException<ProjectBuild> e)
         {
+            _logger.Log(LogLevel.Warn, e, e.Message);
             return NotFound(e.Message);
         }
     }
@@ -77,10 +84,12 @@ public class ProjectManagerController : ControllerBase
         }
         catch (EntityNotFoundException<Project> e)
         {
+            _logger.Log(LogLevel.Warn, e, e.Message);
             return NotFound(e.Message);
         }
         catch (SwaggerException e)
         {
+            _logger.Log(LogLevel.Warn, e, "Can not connect to central server. Build created, but server notification failed!");
             return Ok("Can not connect to central server. Build created, but server notification failed.");
         }
 
@@ -100,6 +109,7 @@ public class ProjectManagerController : ControllerBase
         }
         catch (EntityNotFoundException<ProjectBuild> e)
         {
+            _logger.Log(LogLevel.Warn, e, e.Message);
             return NotFound(e.Message);
         }
     }

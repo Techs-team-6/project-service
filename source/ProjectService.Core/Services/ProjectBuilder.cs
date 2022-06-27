@@ -10,9 +10,9 @@ public class ProjectBuilder : IBuilder
 {
     private readonly Logger _logger;
 
-    public ProjectBuilder()
+    public ProjectBuilder(Logger logger)
     {
-        _logger = LoggerKeeper.GetInstance().Logger;
+        _logger = logger;
     }
 
     public async Task<string> Build(string path, string buildString)
@@ -44,6 +44,7 @@ public class ProjectBuilder : IBuilder
             throw new ConsoleException(proc);
         }
         
+        _logger.Log(LogLevel.Info, "Project built!");
         return buildpath;
     }
 }

@@ -25,13 +25,13 @@ public class GithubService : IGithubService
 
     private static readonly Identity Identity = new("ProjectService", "projectService@noreplay.com");
 
-    public GithubService(ITempRepository tempRepository, IProjectCreator creator, IConfigurationWrapper configuration, ITemplateService templateService)
+    public GithubService(ITempRepository tempRepository, IProjectCreator creator, IConfigurationWrapper configuration, ITemplateService templateService, Logger logger)
     {
         _tempRepository = tempRepository;
         _creator = creator;
         _configuration = configuration;
         _templateService = templateService;
-        _logger = LoggerKeeper.GetInstance().Logger;
+        _logger = logger;
     }
 
     public async Task<Project> CreateProjectAsync(ProjectCreateDto dto, Guid templateId)
@@ -173,6 +173,7 @@ public class GithubService : IGithubService
             CredentialsProvider = (_, _, _) => cred
         };
 
+        _logger.Log(LogLevel.Info, "Pushing changes to{0}...", branchName);
         repo.Network.Push(branch, options);
     }
 
@@ -184,6 +185,7 @@ public class GithubService : IGithubService
         filePaths.AddRange(status.Modified.Select(mods => mods.FilePath).ToList());
         filePaths.AddRange(status.Untracked.Select(mods => mods.FilePath).ToList());
         Commands.Stage(repo, filePaths);
+        //_logger.Log(LogLevel.Info, "Stage changes!");
     }
 
     private static void CommitChanges(string path, string message)
