@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography.X509Certificates;
+using NLog;
 using ProjectService.Core.Interfaces;
 using ProjectService.Shared.Exceptions;
 
@@ -8,11 +9,13 @@ public class ProjectCreator : IProjectCreator
 {
     private ITemplateService _templateService;
     private IArchiver _archiver;
+    private readonly Logger _logger;
 
-    public ProjectCreator(ITemplateService templateService, IArchiver archiver)
+    public ProjectCreator(ITemplateService templateService, IArchiver archiver, Logger logger)
     {
         _templateService = templateService;
         _archiver = archiver;
+        _logger = logger;
     }
 
     public async Task<string> CreateAsync(string path, string projectName, Guid templateId = default)
@@ -26,6 +29,7 @@ public class ProjectCreator : IProjectCreator
 
         _archiver.DecompressStream(path, template);
 
+        _logger.Log(LogLevel.Info, "Project {0} created!", projectName);
         return path;
     }
     
@@ -50,6 +54,8 @@ public class ProjectCreator : IProjectCreator
         }
 
         string csprojPath = Path.Combine(projectPath, $"{projectName}.csproj");
+        
+        _logger.Log(LogLevel.Info, "Project {0} created!", projectName);
         return csprojPath;
     }
 }

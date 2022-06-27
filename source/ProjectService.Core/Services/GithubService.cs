@@ -1,10 +1,13 @@
 using System.Security.Authentication;
 using System.Text;
 using LibGit2Sharp;
+using NLog;
+using NLog.Fluent;
 using Octokit;
 using Octokit.Internal;
 using ProjectService.Core.Interfaces;
 using ProjectService.Shared.Models;
+using LogLevel = NLog.LogLevel;
 using Project = ProjectService.Shared.Entities.Project;
 
 namespace ProjectService.Core.Services;
@@ -17,14 +20,17 @@ public class GithubService : IGithubService
     private readonly ITemplateService _templateService;
     private const string AppName = "ProjectService";
 
+    private readonly Logger _logger;
+
     private static readonly Identity Identity = new("ProjectService", "projectService@noreplay.com");
 
-    public GithubService(ITempRepository tempRepository, IProjectCreator creator, IConfigurationWrapper configuration, ITemplateService templateService)
+    public GithubService(ITempRepository tempRepository, IProjectCreator creator, IConfigurationWrapper configuration, ITemplateService templateService, Logger logger)
     {
         _tempRepository = tempRepository;
         _creator = creator;
         _configuration = configuration;
         _templateService = templateService;
+        _logger = logger;
     }
 
     public async Task<Project> CreateProjectAsync(ProjectCreateDto dto, Guid templateId)
@@ -50,6 +56,8 @@ public class GithubService : IGithubService
         StageChanges(folder);
         CommitChanges(folder, "init project");
         PushChanges(folder);
+        
+        _logger.Log(LogLevel.Info, "Project {0} was created!", dto.RepositoryName);
         return project;
     }
 
@@ -64,6 +72,8 @@ public class GithubService : IGithubService
         {
             var cloneOptions = new CloneOptions {Checkout = true, CredentialsProvider = (_, _, _) => credentials};
             LibGit2Sharp.Repository.Clone(project.Uri.ToString(), path, cloneOptions);
+            
+            _logger.Log(LogLevel.Info, "Repository of project {0} was cloned!", project.Name);
             return;
         }
 
@@ -90,6 +100,8 @@ public class GithubService : IGithubService
         Commands.Pull(repo,
             new LibGit2Sharp.Signature(Identity, DateTimeOffset.Now),
             pullOptions);
+        
+        _logger.Log(LogLevel.Info, "Repository of project {0} was cloned!", project.Name);
     }
 
     private async Task<Octokit.Repository?> CreateEmptyRepository(ProjectCreateDto dto)
@@ -102,10 +114,14 @@ public class GithubService : IGithubService
             Description = "",
             Private = dto.Private
         };
-        
+
         if (string.IsNullOrEmpty(_configuration.GithubOrganization))
+        {
+            _logger.Log(LogLevel.Info, "Empty repository {0} was created!", dto.RepositoryName);
             return await client.Repository.Create(repository);
+        }
         
+        _logger.Log(LogLevel.Info, "Empty repository {0} was created!", dto.RepositoryName);
         return await client.Repository.Create(_configuration.GithubOrganization, repository);
     }
 
@@ -141,6 +157,8 @@ public class GithubService : IGithubService
         stringBuilder.AppendLine("        with:");
         stringBuilder.AppendLine($"          url: {_configuration.ProjectServiceAddress}/api/v1/projects/{project.Id}/builds/create");
         stringBuilder.AppendLine("          method: POST");
+        
+        _logger.Log(LogLevel.Info, "Workflow created");
         return stringBuilder.ToString();
     }
 
@@ -154,6 +172,7 @@ public class GithubService : IGithubService
             CredentialsProvider = (_, _, _) => cred
         };
 
+        _logger.Log(LogLevel.Info, "Pushing changes to{0}...", branchName);
         repo.Network.Push(branch, options);
     }
 
@@ -165,6 +184,7 @@ public class GithubService : IGithubService
         filePaths.AddRange(status.Modified.Select(mods => mods.FilePath).ToList());
         filePaths.AddRange(status.Untracked.Select(mods => mods.FilePath).ToList());
         Commands.Stage(repo, filePaths);
+        //_logger.Log(LogLevel.Info, "Stage changes!");
     }
 
     private static void CommitChanges(string path, string message)

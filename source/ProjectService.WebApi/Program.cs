@@ -1,12 +1,21 @@
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.EntityFrameworkCore;
+using NLog;
 using ProjectService.Core.Interfaces;
 using ProjectService.Core.Notifiers;
 using ProjectService.Core.Repositories;
 using ProjectService.Core.Services;
 using ProjectService.Core.Wrappers;
 using ProjectService.Database;
+using LogLevel = NLog.LogLevel;
+
+Logger logger = LogManager.GetLogger("fileInfoLogger");
+logger.Log(LogLevel.Info, "Starting session...");
 
 var builder = WebApplication.CreateBuilder(args);
+var a = builder.Services.AddSingleton(typeof(Logger), logger);
+
+logger.Log(new LogEventInfo(LogLevel.Info, "fileLogger", "Web App was built..."));
 
 // Add services to the container.
 

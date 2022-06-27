@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using NLog;
 using ProjectService.Core.Interfaces;
 using ProjectService.Shared.Exceptions;
 
@@ -6,6 +7,13 @@ namespace ProjectService.Core.Services;
 
 public class ProjectBuilder : IBuilder
 {
+    private readonly Logger _logger;
+
+    public ProjectBuilder(Logger logger)
+    {
+        _logger = logger;
+    }
+
     public async Task<string> Build(string path, string buildString)
     {
         Guid id = Guid.Empty;
@@ -35,6 +43,7 @@ public class ProjectBuilder : IBuilder
             throw new ConsoleException(proc);
         }
         
+        _logger.Log(LogLevel.Info, "Project built!");
         return buildpath;
     }
 }

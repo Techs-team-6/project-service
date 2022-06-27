@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using NLog;
 using ProjectService.Core.Interfaces;
 using ProjectService.Database;
 using ProjectService.Shared.Entities;
@@ -15,19 +16,22 @@ public class ProjectService : IProjectService
     private readonly IProjectBuildService _buildService;
     private readonly IConfigurationWrapper _configuration;
     private readonly IBuildNotifier _buildNotifier;
+    private readonly Logger _logger;
 
     public ProjectService(
         ProjectDbContext context,
         IGithubService githubService,
         IProjectBuildService buildService, 
         IConfigurationWrapper configuration,
-        IBuildNotifier buildNotifier)
+        IBuildNotifier buildNotifier,
+        Logger logger)
     {
         _context = context;
         _githubService = githubService;
         _buildService = buildService;
         _configuration = configuration;
         _buildNotifier = buildNotifier;
+        _logger = logger;
     }
 
     public async Task<Uri> AddProjectAsync(ProjectCreateDto project, Guid templateId)
@@ -42,6 +46,7 @@ public class ProjectService : IProjectService
         EntityEntry<Project> entry = await _context.Projects.AddAsync(createdProject);
         await _context.SaveChangesAsync();
         
+        _logger.Log(LogLevel.Info, "Project {0} was added!", project.RepositoryName);
         return entry.Entity.Uri;
     }
 
@@ -64,6 +69,7 @@ public class ProjectService : IProjectService
 
         await _buildNotifier.NotifyOnBuildAsync(entry.Entity);
         
+        _logger.Log(LogLevel.Info, "Version created!");
         return entry.Entity;
     }
 
@@ -109,6 +115,7 @@ public class ProjectService : IProjectService
         project.BuildString = newBuildString;
         _context.Update(project);
 
+        _logger.Log(LogLevel.Info, "Build string of project {0} changed to {1}", project.Name, newBuildString);
         return newBuildString;
     }
 
@@ -129,5 +136,7 @@ public class ProjectService : IProjectService
         await _buildService.DeleteAllBuildsAsync(project.Id);
         _context.Projects.Remove(project);
         await _context.SaveChangesAsync();
+        
+        _logger.Log(LogLevel.Info, "Project {0} deleted!", project.Name);
     }
 }

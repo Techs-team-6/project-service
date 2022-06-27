@@ -1,5 +1,7 @@
 using System.IO.Compression;
 using Microsoft.EntityFrameworkCore;
+using NLog;
+using NLog.Fluent;
 using ProjectService.Core.Interfaces;
 using ProjectService.Database;
 using ProjectService.Shared.Entities;
@@ -15,12 +17,15 @@ public class ProjectBuildService : IProjectBuildService
     private readonly ProjectDbContext _context;
     private readonly IArchiver _archiver;
 
+    private readonly Logger _logger;
+
     public ProjectBuildService(
         IGithubService githubService,
         ITempRepository tempRepository,
         IBuilder builder,
         IRepository repository,
-        ProjectDbContext context, IArchiver archiver)
+        ProjectDbContext context, IArchiver archiver,
+        Logger logger)
     {
         _githubService = githubService;
         _tempRepository = tempRepository;
@@ -28,6 +33,7 @@ public class ProjectBuildService : IProjectBuildService
         _repository = repository;
         _context = context;
         _archiver = archiver;
+        _logger = logger;
     }
 
     public async Task<ProjectBuild> CreateBuildAsync(Project project)
@@ -51,6 +57,7 @@ public class ProjectBuildService : IProjectBuildService
 
         int newBuildId = GetLastBuildId(project) + 1;
 
+        _logger.Log(LogLevel.Info, "New build of {0} created", project.Name);
         return new ProjectBuild(newBuildId, storageId, project.Id);
     }
 
@@ -68,7 +75,10 @@ public class ProjectBuildService : IProjectBuildService
         foreach (ProjectBuild build in builds)
         {
             _repository.Delete(build.StorageId);
+            _logger.Log(LogLevel.Info, "Build of {0} with id: {1} was deleted!", projectId, build.Id);
         }
+        
+        _logger.Log(LogLevel.Info, "All builds of {0} deleted!", projectId);
         
         _context.RemoveRange(builds);
         await _context.SaveChangesAsync();
