@@ -8,6 +8,8 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.6" />
+      <PackageReference Include="NLog" Version="5.0.1" />
+      <PackageReference Include="NLog.Config" Version="4.7.15" />
     </ItemGroup>
 
     <ItemGroup>

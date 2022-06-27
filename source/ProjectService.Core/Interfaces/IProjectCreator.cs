@@ -1,6 +1,8 @@
+using System.Security.Cryptography.X509Certificates;
+
 namespace ProjectService.Core.Interfaces;
 
 public interface IProjectCreator
 {
-    public Task<string> CreateAsync(string path, string projectName);
+    Task<string> CreateAsync(string path, string projectName, Guid templateId = default);
 }

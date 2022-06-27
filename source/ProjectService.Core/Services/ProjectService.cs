@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using NLog;
 using ProjectService.Core.Interfaces;
 using ProjectService.Database;
 using ProjectService.Shared.Entities;
@@ -14,33 +16,37 @@ public class ProjectService : IProjectService
     private readonly IProjectBuildService _buildService;
     private readonly IConfigurationWrapper _configuration;
     private readonly IBuildNotifier _buildNotifier;
+    private readonly Logger _logger;
 
     public ProjectService(
         ProjectDbContext context,
         IGithubService githubService,
         IProjectBuildService buildService, 
         IConfigurationWrapper configuration,
-        IBuildNotifier buildNotifier)
+        IBuildNotifier buildNotifier,
+        Logger logger)
     {
         _context = context;
         _githubService = githubService;
         _buildService = buildService;
         _configuration = configuration;
         _buildNotifier = buildNotifier;
+        _logger = logger;
     }
 
-    public async Task<Uri> AddProjectAsync(ProjectCreateDto project)
+    public async Task<Uri> AddProjectAsync(ProjectCreateDto project, Guid templateId)
     {
         if (await _context.Projects.FindAsync(project.Id) != null)
         { 
             throw new EntityAlreadyExistsException<Project>(project.Id);
         }
         
-        Project createdProject = await _githubService.CreateProjectAsync(project);
+        Project createdProject = await _githubService.CreateProjectAsync(project, templateId);
 
         EntityEntry<Project> entry = await _context.Projects.AddAsync(createdProject);
         await _context.SaveChangesAsync();
         
+        _logger.Log(LogLevel.Info, "Project {0} was added!", project.RepositoryName);
         return entry.Entity.Uri;
     }
 
@@ -63,7 +69,19 @@ public class ProjectService : IProjectService
 
         await _buildNotifier.NotifyOnBuildAsync(entry.Entity);
         
+        _logger.Log(LogLevel.Info, "Version created!");
         return entry.Entity;
+    }
+
+    public async Task<Project> GetProjectAsync(Guid projectId)
+    {
+        Project? project = await _context.Projects
+            .FirstOrDefaultAsync(project => project.Id == projectId);
+        if (project == null)
+        {
+            throw new EntityNotFoundException<Project>(projectId);
+        }
+        return project;
     }
 
     public Stream GetProjectVersionArchive(Guid projectId, int buildId)
@@ -92,18 +110,33 @@ public class ProjectService : IProjectService
     {
         if (newBuildString == null) throw new ArgumentNullException(nameof(newBuildString));
         
-        Project? project = _context.Projects.Find(projectId);
-        if (project is null)
-            return null;
+        Project project = _context.Projects.Find(projectId) ?? throw new EntityNotFoundException<Project>(projectId);
 
         project.BuildString = newBuildString;
         _context.Update(project);
 
+        _logger.Log(LogLevel.Info, "Build string of project {0} changed to {1}", project.Name, newBuildString);
         return newBuildString;
     }
 
     public GitInfo GetGitInfo()
     {
         return new GitInfo(_configuration.GithubUsername, _configuration.GithubOrganization);
+    }
+
+    public async Task DeleteProjectAsync(Guid projectId)
+    {
+        Project? project = await _context.Projects
+            .FirstOrDefaultAsync(project => project.Id == projectId);
+        if (project == null)
+        {
+            throw new EntityNotFoundException<Project>(projectId);
+        }
+
+        await _buildService.DeleteAllBuildsAsync(project.Id);
+        _context.Projects.Remove(project);
+        await _context.SaveChangesAsync();
+        
+        _logger.Log(LogLevel.Info, "Project {0} deleted!", project.Name);
     }
 }

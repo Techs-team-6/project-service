@@ -1,4 +1,7 @@
 using System.IO.Compression;
+using Microsoft.EntityFrameworkCore;
+using NLog;
+using NLog.Fluent;
 using ProjectService.Core.Interfaces;
 using ProjectService.Database;
 using ProjectService.Shared.Entities;
@@ -12,19 +15,25 @@ public class ProjectBuildService : IProjectBuildService
     private readonly IBuilder _builder;
     private readonly IRepository _repository;
     private readonly ProjectDbContext _context;
+    private readonly IArchiver _archiver;
+
+    private readonly Logger _logger;
 
     public ProjectBuildService(
         IGithubService githubService,
         ITempRepository tempRepository,
         IBuilder builder,
         IRepository repository,
-        ProjectDbContext context)
+        ProjectDbContext context, IArchiver archiver,
+        Logger logger)
     {
         _githubService = githubService;
         _tempRepository = tempRepository;
         _builder = builder;
         _repository = repository;
         _context = context;
+        _archiver = archiver;
+        _logger = logger;
     }
 
     public async Task<ProjectBuild> CreateBuildAsync(Project project)
@@ -35,20 +44,20 @@ public class ProjectBuildService : IProjectBuildService
 
         // build and compress
         string buildFolderPath = await _builder.Build(tempFolderPath, project.BuildString);
-        string fullBuildZipName = CreateBuildArchive(buildFolderPath, tempFolderPath, project.Name);
 
         // save compressed in repository
         Guid storageId;
-        await using (FileStream fs = File.OpenRead(fullBuildZipName))
+        await using (Stream fs = _archiver.CompressStream(buildFolderPath))
         {
             storageId = _repository.SaveStream(fs);
         }
-
-        File.Delete(fullBuildZipName);
+        
+        
         Directory.Delete(buildFolderPath, recursive: true);
 
         int newBuildId = GetLastBuildId(project) + 1;
 
+        _logger.Log(LogLevel.Info, "New build of {0} created", project.Name);
         return new ProjectBuild(newBuildId, storageId, project.Id);
     }
 
@@ -57,24 +66,22 @@ public class ProjectBuildService : IProjectBuildService
         return _repository.GetStream(build.StorageId);
     }
 
-    private static string CreateBuildArchive(
-        string buildFolderPath,
-        string tempFolderPath,
-        string projectName)
+    public async Task DeleteAllBuildsAsync(Guid projectId)
     {
-        string fullBuildZipName = FullBuildZipName(tempFolderPath, projectName);
-        ZipFile.CreateFromDirectory(
-            buildFolderPath,
-            fullBuildZipName,
-            CompressionLevel.Optimal,
-            includeBaseDirectory: false);
+        List<ProjectBuild> builds = await _context.Builds
+            .Where(build => build.ProjectId == projectId)
+            .ToListAsync();
 
-        return fullBuildZipName;
-    }
-
-    private static string FullBuildZipName(string pathToZip, string projectName)
-    {
-        return Path.Combine(pathToZip, $"{projectName}.zip");
+        foreach (ProjectBuild build in builds)
+        {
+            _repository.Delete(build.StorageId);
+            _logger.Log(LogLevel.Info, "Build of {0} with id: {1} was deleted!", projectId, build.Id);
+        }
+        
+        _logger.Log(LogLevel.Info, "All builds of {0} deleted!", projectId);
+        
+        _context.RemoveRange(builds);
+        await _context.SaveChangesAsync();
     }
 
     private int GetLastBuildId(Project project, int defaultValue = 0)

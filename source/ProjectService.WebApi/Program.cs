@@ -1,12 +1,21 @@
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.EntityFrameworkCore;
+using NLog;
 using ProjectService.Core.Interfaces;
 using ProjectService.Core.Notifiers;
 using ProjectService.Core.Repositories;
 using ProjectService.Core.Services;
 using ProjectService.Core.Wrappers;
 using ProjectService.Database;
+using LogLevel = NLog.LogLevel;
+
+Logger logger = LogManager.GetLogger("fileInfoLogger");
+logger.Log(LogLevel.Info, "Starting session...");
 
 var builder = WebApplication.CreateBuilder(args);
+var a = builder.Services.AddSingleton(typeof(Logger), logger);
+
+logger.Log(new LogEventInfo(LogLevel.Info, "fileLogger", "Web App was built..."));
 
 // Add services to the container.
 
@@ -14,6 +23,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 string? connectionString = builder.Configuration.GetSection("ConnectionString").Value;
 builder.Services.AddDbContext<ProjectDbContext>(options  => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<IProjectService, ProjectService.Core.Services.ProjectService>();
@@ -26,6 +36,8 @@ builder.Services.AddScoped<IRepository, Repository>(conf => new Repository(conf.
 builder.Services.AddScoped<IBuildNotifier, BuildNotifier>();
 builder.Services.AddScoped<IConfigurationWrapper, ConfigurationWrapper>();
 builder.Services.AddScoped<IBuilder, ProjectBuilder>();
+builder.Services.AddScoped<IArchiver, ZipArchiver>();
+builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IProjectCreator, ProjectCreator>();
 
 var app = builder.Build();

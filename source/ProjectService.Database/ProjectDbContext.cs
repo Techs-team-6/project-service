@@ -7,6 +7,7 @@ public sealed class ProjectDbContext : DbContext
 {
     public DbSet<Project> Projects { get; set; } = null!;
     public DbSet<ProjectBuild> Builds { get; set; } = null!;
+    public DbSet<ProjectTemplate> Templates { get; set; } = null!;
 
     public ProjectDbContext(DbContextOptions<ProjectDbContext> options)
     : base(options)
@@ -18,5 +19,9 @@ public sealed class ProjectDbContext : DbContext
     {
         modelBuilder.Entity<Project>().HasKey(p => p.Id);
         modelBuilder.Entity<ProjectBuild>().HasKey(p => new {p.Id, p.ProjectId});
+        modelBuilder.Entity<ProjectTemplate>().HasKey(t => t.Id);
+        modelBuilder.Entity<ProjectTemplate>()
+            .Property(t => t.Id)
+            .ValueGeneratedOnAdd();
     }
 }

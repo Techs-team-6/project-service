@@ -15,10 +15,6 @@ public class BuildNotifier : IBuildNotifier
 
     public async Task NotifyOnBuildAsync(ProjectBuild build)
     {
-        //FIXME: remove
-        if(build.Id == 1)
-            return;
-        
         await _client.AddBuildAsync(build.ProjectId, build.Id.ToString(), build.StorageId);
     }
 }

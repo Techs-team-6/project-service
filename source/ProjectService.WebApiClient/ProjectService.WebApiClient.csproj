@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PackageId>ProjectServiceClient</PackageId>
+        <Version>1.1.2</Version>
+        <Authors>ProjectServiceClient</Authors>
+        <Company>Tech6thTeam</Company>
+        <PackageDescription>ProjectService RestApi Client</PackageDescription>
+        <RepositoryUrl>https://github.com/Techs-team-6/project-service</RepositoryUrl>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <OpenApiSpecLocation>projectservice-openapi-spec.json</OpenApiSpecLocation>
+        <ClientClassName>ProjectServiceApiClient</ClientClassName>
+        <ClientNamespace>ProjectServiceApiClient</ClientNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="obj\Debug" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+      <PackageReference Include="NLog.Config" Version="4.7.15" />
+      <PackageReference Include="NSwag.MSBuild" Version="13.16.1">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+    </ItemGroup>
+
+    <Target Name="generateClient" BeforeTargets="CoreCompile" Inputs="$(OpenApiSpecLocation)" Outputs="$(ClientClassName).cs">
+        <Exec Command="$(NSwagExe) openapi2csclient /input:$(OpenApiSpecLocation)  /classname:$(ClientClassName) /namespace:$(ClientNamespace) /output:$(ClientClassName).cs" ConsoleToMSBuild="true">
+            <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+        </Exec>
+    </Target>
+    <Target Name="forceReGenerationOnRebuild" AfterTargets="CoreClean">
+        <Delete Files="$(ClientClassName).cs" />
+    </Target>
+
+</Project>
